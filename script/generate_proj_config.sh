@@ -12,12 +12,13 @@ project_path=`pwd`
 
 cd .proj_config
 touch proj_config.sh
-
+project_uuid=`uuidgen`
 echo "#!/bin/bash" > proj_config.sh
 echo "" >> proj_config.sh
 echo "# basic config" >> proj_config.sh
 echo "export PROJ_PROJECT_PATH=$project_path" >> proj_config.sh
 echo "export PROJ_VSCODE_CONFIG_PATH=\$PROJ_PROJECT_PATH/.vscode" >> proj_config.sh
+echo "export PROJ_UUID=$project_uuid" >> proj_config.sh
 echo "export PROJ_PROJECT_NAME=$project_name" >> proj_config.sh
 echo "export PROJ_EXEC_NAME=\${PROJ_PROJECT_NAME}" >> proj_config.sh
 echo "export PROJ_EXEC_ARGS=\"\"" >> proj_config.sh 

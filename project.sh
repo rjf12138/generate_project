@@ -3,7 +3,7 @@
 ################################################################
 # 全局变量
 TMP_PROJECT_INFO=/tmp/current_project.tmp
-
+CURRENT_PATH=`pwd`
 ################################################################
 #基础的工具函数
 function help_info() 
@@ -26,7 +26,7 @@ function help_info()
 
 function enter_bin_directory()
 {
-    dir=$BIN_OUTPUT_DIR
+    dir=$1
     if [ ! -d "$dir" ]
     then
         echo "Can't find \"$dir\" directory."
@@ -75,39 +75,51 @@ function generate_project()
 
     cd ./$PROJECT_NAME/
     git init
+    cd $CURRENT_PATH
 }
 # compile_and_install option project_path
 function compile_and_install()
 {
-    cd $2
-    source .proj_config/proj_config.sh
-
-    if [ ! -f ./CMakeLists.txt ]
+    if [ $# -ne 2 ]
     then
-        echo "can't find CMakeLists.txt. path."
+        echo "compile_and_install option project_path."
         return 0
     fi
 
-    if [ -d "./build" ]
+    cd $2
+    if [ ! -f ./CMakeLists.txt ]
     then
-        rm -rf ./build
+        echo "can't find CMakeLists.txt path."
+        return 0
     fi
+
+    case $1 in
+    "-cr")
+        if [ -d "./build" ]
+        then
+            rm -rf ./build
+        fi
+        mkdir ./build
+        ;;
+    "-r")
+        if [ ! -d "./build" ]
+        then
+            mkdir ./build
+        fi
+        ;;
+    *)
+        echo "compile_and_install unknown option $1"
+        return 0
+    ;;
+    esac
 
     # 编译项目
     # 项目的可执行文件或是库根据生成的cmake_file
     # 决定输出位置
-    mkdir ./build
     cd build
     cmake ..
     make
     cd ..
-
-    # 如果设置 -r 选项表示编译完后
-    # 清理生成的中间文件
-    if [ $# -eq 1 ] && [ $1 == "-r" ]
-    then
-        ./clean_project.sh
-    fi
 
     # 将项目下的 config 配置文件拷贝到可执行文件所在目录
     cp -rf ./config/* $PROJ_CONFIG_OUTPUT_DIR
@@ -120,7 +132,7 @@ function load_project()
         echo "Input project path."
         return 0
     fi
-
+    pwd
     if [ ! -d $1 ]
     then
         echo "$1 is not a dir"
@@ -138,6 +150,8 @@ function load_project()
     project_path=`pwd`
     echo "project_config=$project_path/.proj_config/proj_config.sh" > $TMP_PROJECT_INFO
     echo "project_name=$PROJ_PROJECT_NAME" >> $TMP_PROJECT_INFO
+    echo "project_uuid=$PROJ_UUID" >> $TMP_PROJECT_INFO
+    echo "project_path=$PROJ_PROJECT_PATH" >> $TMP_PROJECT_INFO
 
     #更新项目路径
     old_project_path=`cat $project_path/.proj_config/proj_config.sh | grep PROJ_PROJECT_PATH`
@@ -149,6 +163,12 @@ if [ $# -eq 0 ]
 then
     help_info
 fi
+
+##########################################################################
+#加载项目的配置
+project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
+source $project_config
+##########################################################################
 
 case $1 in
 "-h")
@@ -162,22 +182,18 @@ case $1 in
     load_project $2
     ;;
 "-cr")
-    generate_proj_cmake_file
-    compile_and_install -cr
+    generate_proj_cmake_file.sh
+    compile_and_install -cr $PROJ_PROJECT_PATH
     ;;
 "-r")
-    generate_proj_cmake_file
-    compile_and_install
+    generate_proj_cmake_file.sh
+    compile_and_install -r $PROJ_PROJECT_PATH
     ;;
 "-c")
     clean_project.sh
     ;;
 "-e")
-    if [ $# -ne 2 ]
-    then
-        help_info
-    fi
-    enter_bin_directory $2
+    enter_bin_directory $PROJ_PROJECT_PATH/bin
     ;;
 "-w")
     gnome-terminal
@@ -198,10 +214,13 @@ case $1 in
     set_curr_project $2
     ;;
 "-pp")
-    project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
-    project_name=`cat $TMP_PROJECT_INFO | grep project_name | awk -F[=] '{print $2}'`
-    echo "project_name=$project_name"
-    echo "project_config=$project_config"
+    cat $TMP_PROJECT_INFO
+    ;;
+"-t")
+    project_path=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
+    cp $project_path/../src/*.cc $project_path/src/
+    cp $project_path/../src/*.h $project_path/inc/
+    mv $project_path/src/main.cc $project_path/main/
     ;;
 *)
     help_info

@@ -5,7 +5,16 @@
 ########################################################
 
 #!/bin/bash
-# 加载项目自身配置
+
+#########################################################
+# 全局变量
+TMP_PROJECT_INFO=/tmp/current_project.tmp
+CURRENT_PATH=`pwd`
+##########################################################################
+#加载项目的配置
+project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
+source $project_config
+##########################################################################
 cd $PROJ_PROJECT_PATH
 touch $PROJ_CMAKE_FILE
 
@@ -13,8 +22,8 @@ touch $PROJ_CMAKE_FILE
 echo "project($PROJ_PROJECT_NAME)" > ./$PROJ_CMAKE_FILE
 echo "cmake_minimum_required(VERSION 3.10)" >> ./$PROJ_CMAKE_FILE
 echo "include_directories(./inc/)" >> ./$PROJ_CMAKE_FILE
-echo "include_directories(\${PROJECT_BINARY_DIR}/../local/include)" >> ./$PROJ_CMAKE_FILE
-echo "link_directories(\${PROJECT_BINARY_DIR}/../local/lib)" >> ./$PROJ_CMAKE_FILE
+echo "include_directories(\${PROJECT_BINARY_DIR}/inc)" >> ./$PROJ_CMAKE_FILE
+echo "link_directories(\${PROJECT_BINARY_DIR}/lib)" >> ./$PROJ_CMAKE_FILE
 echo "" >> ./$PROJ_CMAKE_FILE
 echo "if(CMAKE_COMPILER_IS_GNUCXX)" >> ./$PROJ_CMAKE_FILE
 echo "    add_compile_options(-std=c++11)" >> ./$PROJ_CMAKE_FILE

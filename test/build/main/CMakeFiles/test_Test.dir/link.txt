@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/test_Test.dir/main.cc.o  -o ../../bin/test_Test  -L/home/ruanjian/workspace/project/generate_project/test/build/lib -Wl,-rpath,/home/ruanjian/workspace/project/generate_project/test/build/lib ../src/libtest.a 

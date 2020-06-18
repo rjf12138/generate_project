@@ -8,7 +8,7 @@
 
 #########################################################
 # 全局变量
-TMP_PROJECT_INFO=/tmp/current_project.tmp
+TMP_PROJECT_INFO=/usr/local/etc/current_project.tmp
 CURRENT_PATH=`pwd`
 ##########################################################################
 #加载项目的配置
@@ -22,8 +22,7 @@ touch $PROJ_CMAKE_FILE
 echo "project($PROJ_PROJECT_NAME)" > ./$PROJ_CMAKE_FILE
 echo "cmake_minimum_required(VERSION 3.10)" >> ./$PROJ_CMAKE_FILE
 echo "include_directories(./inc/)" >> ./$PROJ_CMAKE_FILE
-echo "include_directories(\${PROJECT_BINARY_DIR}/inc)" >> ./$PROJ_CMAKE_FILE
-echo "link_directories(\${PROJECT_BINARY_DIR}/lib)" >> ./$PROJ_CMAKE_FILE
+echo "link_directories(./lib)" >> ./$PROJ_CMAKE_FILE
 echo "" >> ./$PROJ_CMAKE_FILE
 echo "if(CMAKE_COMPILER_IS_GNUCXX)" >> ./$PROJ_CMAKE_FILE
 echo "    add_compile_options(-std=c++11)" >> ./$PROJ_CMAKE_FILE
@@ -39,12 +38,13 @@ touch $PROJ_CMAKE_FILE
 
 echo "project($PROJ_PROJECT_NAME)" > $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
+echo "set(LIBARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR)" >> $PROJ_CMAKE_FILE
 echo "aux_source_directory(. DIR_LIB_SRCS)" >> $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
 echo "add_library ($PROJ_PROJECT_NAME \${DIR_LIB_SRCS})" >> $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
 
-for static_lib in `ls ../lib/ | grep -E ".a"`
+for static_lib in `ls ../lib/ | sed 's/^lib//' | sed 's/\.a$//'`
 do
     echo "target_link_libraries($PROJ_PROJECT_NAME -l$static_lib)" >> $PROJ_CMAKE_FILE
 done
@@ -66,9 +66,9 @@ echo "" >> $PROJ_CMAKE_FILE
 # 匹配满足 .cc 和 .cpp 后缀的文件
 for src_file in `ls | grep -E ".cc|.cpp|.c"`
 do
-    echo "add_executable(${PROJ_EXEC_NAME}_Test $src_file)" >> $PROJ_CMAKE_FILE
+    echo "add_executable(main $src_file)" >> $PROJ_CMAKE_FILE
 done
 
-echo "target_link_libraries(${PROJ_EXEC_NAME}_Test $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
+echo "target_link_libraries(main $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
 
 exit 0

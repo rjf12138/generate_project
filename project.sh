@@ -2,7 +2,7 @@
 
 ################################################################
 # 全局变量
-TMP_PROJECT_INFO=/tmp/current_project.tmp
+TMP_PROJECT_INFO=/usr/local/etc/current_project.tmp
 CURRENT_PATH=`pwd`
 ################################################################
 #基础的工具函数
@@ -19,6 +19,7 @@ function help_info()
     echo "-cp proj_name         --create new project."
     echo "-sp proj_name         --set current work project."
     echo "-pp                   --print current project name."
+    echo "-dr                   --daily record"
     echo ""
 
     exit 0
@@ -77,6 +78,21 @@ function generate_project()
     git init
     cd $CURRENT_PATH
 }
+
+function clean_project()
+{
+    if [[ $PROJ_PROJECT_PATH != "" ]];then
+        rm -r $PROJ_PROJECT_PATH/./bin/
+        rm -r $PROJ_PROJECT_PATH/./lib/
+        rm -rf $PROJ_PROJECT_PATH/./build/
+
+        mkdir $PROJ_PROJECT_PATH/./bin/
+        mkdir $PROJ_PROJECT_PATH/./lib/
+    fi
+
+    echo "clean over"
+}
+
 # compile_and_install option project_path
 function compile_and_install()
 {
@@ -95,10 +111,7 @@ function compile_and_install()
 
     case $1 in
     "-cr")
-        if [ -d "./build" ]
-        then
-            rm -rf ./build
-        fi
+        clean_project
         mkdir ./build
         ;;
     "-r")
@@ -122,7 +135,9 @@ function compile_and_install()
     cd ..
 
     # 将项目下的 config 配置文件拷贝到可执行文件所在目录
-    cp -rf ./config/* $PROJ_CONFIG_OUTPUT_DIR
+    if [[ `ls -A ./config/` != "" ]];then
+        cp -rf ./config/* $PROJ_CONFIG_OUTPUT_DIR
+    fi
 }
 
 function load_project()
@@ -167,7 +182,9 @@ fi
 ##########################################################################
 #加载项目的配置
 project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
-source $project_config
+if [ $project_config != "" ];then
+    source $project_config
+fi
 ##########################################################################
 
 case $1 in
@@ -190,7 +207,7 @@ case $1 in
     compile_and_install -r $PROJ_PROJECT_PATH
     ;;
 "-c")
-    clean_project.sh
+    clean_project
     ;;
 "-e")
     enter_bin_directory $PROJ_PROJECT_PATH/bin
@@ -221,6 +238,10 @@ case $1 in
     cp $project_path/../src/*.cc $project_path/src/
     cp $project_path/../src/*.h $project_path/inc/
     mv $project_path/src/main.cc $project_path/main/
+    ;;
+"-dr")
+    write_project_daily_record.sh
+    clear
     ;;
 *)
     help_info

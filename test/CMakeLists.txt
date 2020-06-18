@@ -1,8 +1,7 @@
 project(test)
 cmake_minimum_required(VERSION 3.10)
 include_directories(./inc/)
-include_directories(${PROJECT_BINARY_DIR}/inc)
-link_directories(${PROJECT_BINARY_DIR}/lib)
+link_directories(./lib)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-std=c++11)

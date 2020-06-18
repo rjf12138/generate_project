@@ -15,3 +15,6 @@ do
     sudo ln -sv ./script/$script $script
     sudo chmod 755 $script
 done
+
+sudo touch /usr/local/etc/current_project.tmp
+sudo chmod  777 /usr/local/etc/current_project.tmp

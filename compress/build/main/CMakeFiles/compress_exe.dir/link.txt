@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/compress_exe.dir/main.cc.o  -o ../../bin/compress_exe  -L/home/ruanjian/workspace/project/generate_project/compress/./lib -Wl,-rpath,/home/ruanjian/workspace/project/generate_project/compress/./lib ../src/libcompress.a 

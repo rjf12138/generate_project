@@ -25,7 +25,13 @@ echo "include_directories(./inc/)" >> ./$PROJ_CMAKE_FILE
 echo "link_directories(./lib)" >> ./$PROJ_CMAKE_FILE
 echo "" >> ./$PROJ_CMAKE_FILE
 echo "if(CMAKE_COMPILER_IS_GNUCXX)" >> ./$PROJ_CMAKE_FILE
-echo "    add_compile_options(-std=c++11)" >> ./$PROJ_CMAKE_FILE
+
+if [ $# == 1 ] && [ $1 == "release" ];then
+    echo "    add_compile_options(-std=c++11)" >> ./$PROJ_CMAKE_FILE
+else
+    echo "    add_compile_options(-g -std=c++11)" >> ./$PROJ_CMAKE_FILE
+fi
+
 echo "    message(STATUS \"optional:-std=c++11\")" >>  ./$PROJ_CMAKE_FILE 
 echo "endif(CMAKE_COMPILER_IS_GNUCXX)" >> ./$PROJ_CMAKE_FILE
 echo "" >> ./$PROJ_CMAKE_FILE
@@ -66,9 +72,9 @@ echo "" >> $PROJ_CMAKE_FILE
 # 匹配满足 .cc 和 .cpp 后缀的文件
 for src_file in `ls | grep -E ".cc|.cpp|.c"`
 do
-    echo "add_executable(main $src_file)" >> $PROJ_CMAKE_FILE
+    echo "add_executable($PROJ_EXEC_NAME $src_file)" >> $PROJ_CMAKE_FILE
 done
 
-echo "target_link_libraries(main $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
+echo "target_link_libraries($PROJ_EXEC_NAME $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
 
 exit 0

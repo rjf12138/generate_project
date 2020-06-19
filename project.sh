@@ -13,6 +13,7 @@ function help_info()
     echo "-l                    --load project."
     echo "-cr                   --clean and rebuild project."
     echo "-r                    --rebuild without cleanning."
+    echo "-rr                   --release version(non debug)"
     echo "-c                    --clean all."
     echo "-e                    --enter project exec file dir."
     echo "-w                    --open new gnome_terminal."
@@ -20,6 +21,9 @@ function help_info()
     echo "-sp proj_name         --set current work project."
     echo "-pp                   --print current project name."
     echo "-dr                   --daily record"
+    echo "-db                   --debug the project."
+    echo "-rg                   --add remote git address"
+    echo "-push                 --push to github"
     echo ""
 
     exit 0
@@ -136,7 +140,8 @@ function compile_and_install()
 
     # 将项目下的 config 配置文件拷贝到可执行文件所在目录
     if [[ `ls -A ./config/` != "" ]];then
-        cp -rf ./config/* $PROJ_CONFIG_OUTPUT_DIR
+        echo $PROJ_CONFIG_OUTPUT_DIR
+        cp -rf ./config/ $PROJ_CONFIG_OUTPUT_DIR/
     fi
 }
 
@@ -172,7 +177,11 @@ function load_project()
     old_project_path=`cat $project_path/.proj_config/proj_config.sh | grep PROJ_PROJECT_PATH`
     new_project_path="export PROJ_PROJECT_PATH=$project_path"
     sed 's/$old_project_path/$new_project_path/g' -i $project_path/.proj_config/proj_config.sh
+
+    # 用vscode打开项目路径
+    code $project_path
 }
+
 #########################################################################
 if [ $# -eq 0 ]
 then
@@ -205,6 +214,10 @@ case $1 in
 "-r")
     generate_proj_cmake_file.sh
     compile_and_install -r $PROJ_PROJECT_PATH
+    ;;
+"-rr")
+    generate_proj_cmake_file.sh release
+    compile_and_install -cr $PROJ_PROJECT_PATH
     ;;
 "-c")
     clean_project
@@ -242,6 +255,27 @@ case $1 in
 "-dr")
     write_project_daily_record.sh
     clear
+    ;;
+"-db")
+    generate_vscode_debug_config.sh
+    ;;
+"-rg")
+    cd $PROJ_PROJECT_PATH
+
+    note="输入远程github仓库地址\n(git remote add origin git@github.com:XXXX/XXXXX.git)"
+    Doing=$(whiptail --title "title" --inputbox "echo -e $note" 10 60  3>&1 1>&2 2>&3)
+    exitstatus=$?
+    if [ $exitstatus != 0 ]; then
+        echo "You chose Cancel."
+    fi
+    $Doing
+    ;;
+"-push")
+    cd $PROJ_PROJECT_PATH
+
+    git add -A .
+	git commit -m "$date"
+	git push -u origin $PROJ_PROJECT_PATH
     ;;
 *)
     help_info

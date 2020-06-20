@@ -77,10 +77,6 @@ function generate_project()
     # 创建项目配置文件和cmake编译文件
     # 只支持在当前所在目录下创建文件
     generate_proj_config.sh $PROJECT_NAME
-
-    cd ./$PROJECT_NAME/
-    git init
-    cd $CURRENT_PATH
 }
 
 function clean_project()
@@ -152,7 +148,7 @@ function load_project()
         echo "Input project path."
         return 0
     fi
-    pwd
+
     if [ ! -d $1 ]
     then
         echo "$1 is not a dir"
@@ -179,7 +175,7 @@ function load_project()
     sed 's/$old_project_path/$new_project_path/g' -i $project_path/.proj_config/proj_config.sh
 
     # 用vscode打开项目路径
-    code $project_path
+    code -r $project_path
 }
 
 #########################################################################
@@ -261,6 +257,7 @@ case $1 in
     ;;
 "-rg")
     cd $PROJ_PROJECT_PATH
+    git init
 
     note="输入远程github仓库地址\n(git remote add origin git@github.com:XXXX/XXXXX.git)"
     Doing=$(whiptail --title "title" --inputbox "echo -e $note" 10 60  3>&1 1>&2 2>&3)

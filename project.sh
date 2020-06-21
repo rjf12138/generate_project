@@ -68,9 +68,17 @@ function generate_project()
     mkdir ./$PROJECT_NAME/doc
     mkdir ./$PROJECT_NAME/inc
     mkdir ./$PROJECT_NAME/lib
+    mkdir ./$PROJECT_NAME/lib/debug
+    mkdir ./$PROJECT_NAME/lib/release
     mkdir ./$PROJECT_NAME/main
     mkdir ./$PROJECT_NAME/src
-    mkdir ./$PROJECT_NAME/bin
+    mkdir ./$PROJECT_NAME/output
+    mkdir ./$PROJECT_NAME/output/debug
+    mkdir ./$PROJECT_NAME/output/debug/bin
+    mkdir ./$PROJECT_NAME/output/debug/lib
+    mkdir ./$PROJECT_NAME/output/release
+    mkdir ./$PROJECT_NAME/output/release/bin
+    mkdir ./$PROJECT_NAME/output/release/lib
     mkdir ./$PROJECT_NAME/.proj_config
     mkdir ./$PROJECT_NAME/.vscode
 

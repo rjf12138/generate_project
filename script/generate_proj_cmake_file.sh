@@ -8,7 +8,7 @@
 
 #########################################################
 # 全局变量
-TMP_PROJECT_INFO=/usr/local/etc/current_project.tmp
+TMP_PROJECT_INFO=$HOME/.current_project.tmp
 CURRENT_PATH=`pwd`
 ##########################################################################
 #加载项目的配置
@@ -22,11 +22,17 @@ touch $PROJ_CMAKE_FILE
 echo "project($PROJ_PROJECT_NAME)" > ./$PROJ_CMAKE_FILE
 echo "cmake_minimum_required(VERSION 3.10)" >> ./$PROJ_CMAKE_FILE
 echo "include_directories(./inc/)" >> ./$PROJ_CMAKE_FILE
-echo "link_directories(./lib)" >> ./$PROJ_CMAKE_FILE
+
+if [ $1 == "release" ];then
+    echo "link_directories(./lib/release/)" >> ./$PROJ_CMAKE_FILE
+else
+    echo "link_directories(./lib/debug/)" >> ./$PROJ_CMAKE_FILE
+fi
+
 echo "" >> ./$PROJ_CMAKE_FILE
 echo "if(CMAKE_COMPILER_IS_GNUCXX)" >> ./$PROJ_CMAKE_FILE
 
-if [ $# == 1 ] && [ $1 == "release" ];then
+if [ $1 == "release" ];then
     echo "    add_compile_options(-std=c++11)" >> ./$PROJ_CMAKE_FILE
 else
     echo "    add_compile_options(-g -std=c++11)" >> ./$PROJ_CMAKE_FILE
@@ -44,13 +50,25 @@ touch $PROJ_CMAKE_FILE
 
 echo "project($PROJ_PROJECT_NAME)" > $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
-echo "set(LIBARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR)" >> $PROJ_CMAKE_FILE
+
+if [ $1 == "release" ];then
+    echo "set(LIBARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR/release/lib)" >> $PROJ_CMAKE_FILE
+else
+    echo "set(LIBARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR/debug/lib)" >> $PROJ_CMAKE_FILE
+fi
 echo "aux_source_directory(. DIR_LIB_SRCS)" >> $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
 echo "add_library ($PROJ_PROJECT_NAME \${DIR_LIB_SRCS})" >> $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
 
-for static_lib in `ls ../lib/ | sed 's/^lib//' | sed 's/\.a$//'`
+link_lib=`ls`
+if [ $1 == "release" ];then
+    link_lib=`ls ../lib/release/`
+else
+    link_lib=`ls ../lib/debug/`
+fi
+
+for static_lib in `echo $link_lib | sed 's/^lib//' | sed 's/\.a$//'`
 do
     echo "target_link_libraries($PROJ_PROJECT_NAME -l$static_lib)" >> $PROJ_CMAKE_FILE
 done
@@ -66,7 +84,13 @@ touch $PROJ_CMAKE_FILE
 
 echo "project($PROJ_PROJECT_NAME)" > $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
-echo "set(EXECUTABLE_OUTPUT_PATH $PROJ_BIN_OUTPUT_DIR)" >> $PROJ_CMAKE_FILE
+
+if [ $1 == "release" ];then
+    echo "set(EXECUTABLE_OUTPUT_PATH $PROJ_BIN_OUTPUT_DIR/release/bin)" >> $PROJ_CMAKE_FILE
+else
+    echo "set(EXECUTABLE_OUTPUT_PATH $PROJ_BIN_OUTPUT_DIR/debug/bin)" >> $PROJ_CMAKE_FILE
+fi
+
 echo "" >> $PROJ_CMAKE_FILE
 
 # 匹配满足 .cc 和 .cpp 后缀的文件

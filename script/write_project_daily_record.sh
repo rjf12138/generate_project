@@ -6,7 +6,7 @@
 
 #########################################################
 # 全局变量
-TMP_PROJECT_INFO=/usr/local/etc/current_project.tmp
+TMP_PROJECT_INFO=$HOME/.current_project.tmp
 CURRENT_PATH=`pwd`
 ##########################################################################
 #加载项目的配置

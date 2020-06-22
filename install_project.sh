@@ -16,5 +16,6 @@ do
     sudo chmod 755 $script
 done
 
-sudo touch /usr/local/etc/current_project.tmp
-sudo chmod  777 /usr/local/etc/current_project.tmp
+TMP_PROJECT_INFO=$HOME/.current_project.tmp
+sudo touch $TMP_PROJECT_INFO
+sudo chmod  777 $TMP_PROJECT_INFO

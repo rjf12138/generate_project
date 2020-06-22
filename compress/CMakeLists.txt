@@ -1,7 +1,7 @@
 project(compress)
 cmake_minimum_required(VERSION 3.10)
 include_directories(./inc/)
-link_directories(./lib)
+link_directories(./lib/release/)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_compile_options(-std=c++11)

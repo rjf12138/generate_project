@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../../bin/compress_exe"
-  "../../bin/compress_exe.pdb"
+  "../../bin/release/bin/compress_exe"
+  "../../bin/release/bin/compress_exe.pdb"
   "CMakeFiles/compress_exe.dir/main.cc.o"
 )
 

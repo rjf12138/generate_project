@@ -25,9 +25,8 @@ echo "export PROJ_EXEC_ARGS=\"\"" >> proj_config.sh
 echo "export PROJ_LIB_NAME=\${PROJ_PROJECT_NAME}" >> proj_config.sh
 echo "export PROJ_CMAKE_FILE=CMakeLists.txt" >> proj_config.sh
 echo "export PROJ_LIB_LINK_LIST=\"\"" >> proj_config.sh
-echo "export PROJ_LIB_OUTPUT_DIR=\$PROJ_PROJECT_PATH/lib" >> proj_config.sh
-echo "export PROJ_BIN_OUTPUT_DIR=\$PROJ_PROJECT_PATH/bin" >> proj_config.sh
-echo "export PROJ_CONFIG_OUTPUT_DIR=\$PROJ_BIN_OUTPUT_DIR" >> proj_config.sh
+echo "export PROJ_LIB_OUTPUT_DIR=\$PROJ_PROJECT_PATH/output" >> proj_config.sh
+echo "export PROJ_BIN_OUTPUT_DIR=\$PROJ_PROJECT_PATH/output" >> proj_config.sh
 echo "" >> proj_config.sh
 echo "#compile and debug config" >> proj_config.sh
 echo "export COMPILE_SCRIPT_NAME=project" >> proj_config.sh

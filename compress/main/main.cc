@@ -42,10 +42,7 @@ end:
 int main(int argc,char **argv)
 {
 	int res = options(argc, argv);
-	std::cout << "argc: " << argc << std::endl;
-	for (int i = 0;i < argc; ++i) {
-		std::cout << "argv: " << i << " " << argv[i] << std::endl;
-	}
+
 	switch(res){
 		case 0:
 			RjfCompress::compress(argv[2]);

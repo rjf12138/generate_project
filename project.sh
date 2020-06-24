@@ -197,8 +197,10 @@ function load_project()
     echo "project_uuid=$PROJ_UUID" >> $TMP_PROJECT_INFO
     echo "project_path=$PROJ_PROJECT_PATH" >> $TMP_PROJECT_INFO
 
+    echo "$project_uuid=$project_path" >> $HOME/.project_history
+
     #更新项目路径
-    old_project_path=`cat $project_path/.proj_config/proj_config.sh | grep PROJ_PROJECT_PATH`
+    old_project_path=`cat $project_path/.proj_config/proj_config.sh | grep PROJ_PROJECT_PATH=`
     new_project_path="export PROJ_PROJECT_PATH=$project_path"
     sed "s#$old_project_path#$new_project_path#g" -i $project_path/.proj_config/proj_config.sh
 
@@ -209,6 +211,23 @@ function load_project()
     code -r $project_path
 }
 
+function update_project_info()
+{
+    for project_info in `cat $HOME/.project_history`
+    do
+        project_path=`echo $project_info | awk -F[=] '{print $2}'`
+        project_uuid=`echo $project_info | awk -F[=] '{print $1}'`
+        if [ ! -f $project_path/.project_config/project_config.sh ];then
+            sed "s#$project_info//g" -i $HOME/.project_history
+        else
+            curr_project_uuid=`cat $project_path/.project_config/project_config.sh \
+                                | grep PROJ_UUID= | awk -F[=] '{print $2}'`
+            if [ $project_uuid != $curr_project_uuid ];then
+                sed "s#$project_info//g" -i $HOME/.project_history
+            fi 
+        fi
+    done
+}
 #########################################################################
 if [ $# -eq 0 ]
 then
@@ -217,8 +236,7 @@ fi
 
 ##########################################################################
 #加载项目的配置
-project_config=`cat $TMP_PROJECT_INFO 2> /dev/null | grep project_config | awk -F[=] '{print $2}' | tr -s ‘\n'`
-echo $proj_config
+project_config=`cat $TMP_PROJECT_INFO 2> /dev/null | grep project_config | awk -F[=] '{print $2}' | tr -s '\n'`
 cat $TMP_PROJECT_INFO
 if [ $project_config != "" ] && [ -f $project_config ];then
     source $project_config
@@ -234,6 +252,7 @@ case $1 in
     then
         help_info
     fi
+    # 用图形化选择项目
     load_project $2
     ;;
 "-cr")

@@ -32,12 +32,14 @@ case $OPTION in
     exitstatus=$?
     if [ $exitstatus != 0 ]; then
         echo "You chose Cancel."
+        exit 1
     fi
 
     Doing=$(whiptail --title "title" --inputbox "还有什么正在做" 10 60  3>&1 1>&2 2>&3)
     exitstatus=$?
     if [ $exitstatus != 0 ]; then
         echo "You chose Cancel."
+        exit 1
     fi
 
     # 最后确认

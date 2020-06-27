@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcompress.a  CMakeFiles/compress.dir/bit_operation.cc.o CMakeFiles/compress.dir/build_tree.cc.o CMakeFiles/compress.dir/compress.cc.o CMakeFiles/compress.dir/compress_extract.cc.o CMakeFiles/compress.dir/decode.cc.o CMakeFiles/compress.dir/encode.cc.o CMakeFiles/compress.dir/extract.cc.o CMakeFiles/compress.dir/rwfile.cc.o
-/usr/bin/ranlib libcompress.a

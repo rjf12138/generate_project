@@ -1,8 +1,0 @@
-/home/ruanjian/workspace/project/generate_project/compress/build/CMakeFiles/rebuild_cache.dir
-/home/ruanjian/workspace/project/generate_project/compress/build/CMakeFiles/edit_cache.dir
-/home/ruanjian/workspace/project/generate_project/compress/build/src/CMakeFiles/rebuild_cache.dir
-/home/ruanjian/workspace/project/generate_project/compress/build/src/CMakeFiles/compress.dir
-/home/ruanjian/workspace/project/generate_project/compress/build/src/CMakeFiles/edit_cache.dir
-/home/ruanjian/workspace/project/generate_project/compress/build/main/CMakeFiles/rebuild_cache.dir
-/home/ruanjian/workspace/project/generate_project/compress/build/main/CMakeFiles/compress_exe.dir
-/home/ruanjian/workspace/project/generate_project/compress/build/main/CMakeFiles/edit_cache.dir

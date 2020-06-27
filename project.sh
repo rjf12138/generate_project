@@ -197,9 +197,15 @@ function load_project()
     echo "project_uuid=$PROJ_UUID" >> $TMP_PROJECT_INFO
     echo "project_path=$PROJ_PROJECT_PATH" >> $TMP_PROJECT_INFO
 
-    echo "$project_uuid=$project_path" >> $HOME/.project_history
+    # 记录下加载过的项目
+    search_record=`cat $HOME/.project_history | grep $PROJ_UUID`
+    if [ -z "$search_record" ];then
+        echo "$PROJ_UUID=$project_path" >> $HOME/.project_history
+    else
+        sed "s#$search_record#$PROJ_UUID=$project_path#g" -i $HOME/.project_history
+    fi
 
-    #更新项目路径
+    #更新项目路径到临时缓存中
     old_project_path=`cat $project_path/.proj_config/proj_config.sh | grep PROJ_PROJECT_PATH=`
     new_project_path="export PROJ_PROJECT_PATH=$project_path"
     sed "s#$old_project_path#$new_project_path#g" -i $project_path/.proj_config/proj_config.sh
@@ -211,19 +217,23 @@ function load_project()
     code -r $project_path
 }
 
+# update_project_info
 function update_project_info()
 {
+    # 检查历史项目信息
     for project_info in `cat $HOME/.project_history`
     do
         project_path=`echo $project_info | awk -F[=] '{print $2}'`
         project_uuid=`echo $project_info | awk -F[=] '{print $1}'`
-        if [ ! -f $project_path/.project_config/project_config.sh ];then
-            sed "s#$project_info//g" -i $HOME/.project_history
+        if [ ! -f $project_path/.proj_config/proj_config.sh ];then
+            # 获取的项目是个无法加载的项目
+            sed "s#$project_info##g" -i $HOME/.project_history
         else
-            curr_project_uuid=`cat $project_path/.project_config/project_config.sh \
+            curr_project_uuid=`cat $project_path/.proj_config/proj_config.sh \
                                 | grep PROJ_UUID= | awk -F[=] '{print $2}'`
+            # 比对项目的uuid与记录中的uuid是否一致
             if [ $project_uuid != $curr_project_uuid ];then
-                sed "s#$project_info//g" -i $HOME/.project_history
+                sed "s#$project_info##g" -i $HOME/.project_history
             fi 
         fi
     done
@@ -237,23 +247,60 @@ fi
 ##########################################################################
 #加载项目的配置
 project_config=`cat $TMP_PROJECT_INFO 2> /dev/null | grep project_config | awk -F[=] '{print $2}' | tr -s '\n'`
-cat $TMP_PROJECT_INFO
 if [ $project_config != "" ] && [ -f $project_config ];then
     source $project_config
 fi
 ##########################################################################
+
+if [ ! -f $HOME/.project_history ];then
+    touch $HOME/.project_history
+    echo /dev/null > $HOME/.project_history
+fi
 
 case $1 in
 "-h")
     help_info
     ;;
 "-l")
-    if [ $# -ne 2 ]
-    then
-        help_info
+    update_project_info # 更新历史项目配置
+    project_arr=("输入项目路径" "")
+    project_menu=("1" "输入项目路径" "2" "")
+    for proj_info in `cat $HOME/.project_history`
+    do
+        project_path=`echo $proj_info | awk -F[=] '{print $2}'`
+        project_uuid=`echo $proj_info | awk -F[=] '{print $1}'`
+        result=`cat $TMP_PROJECT_INFO | grep $project_uuid`
+        if [ ! -z $result ];then # 将最近打开项目设置到首要位置
+            project_arr[1]=$project_path
+            project_menu[3]=$project_path
+            continue
+        fi
+        project_arr[${#project_arr[*]}]=$project_path
+        project_menu[${#project_menu[*]}]=${#project_arr[*]}
+        project_menu[${#project_menu[*]}]=$project_path
+    done
+    
+    OPTION=$(whiptail --title "项目选择" --menu "选择加载的项目：" 15 60 ${#project_arr[*]} "${project_menu[@]}" 3>&1 1>&2 2>&3)
+    exitstatus=$?
+    if [ $exitstatus != 0 ]; then
+        echo "exit."
+        exit 1
     fi
+
+    if [ $OPTION == "1" ];then
+        proj_path=$(whiptail --title "title" --inputbox "项目路径" 10 60 3>&1 1>&2 2>&3)
+        exitstatus=$?
+        if [ $exitstatus != 0 ]; then
+            echo "You chose Cancel."
+            exit 1
+        fi
+    else
+        index=$[$OPTION-1]
+        proj_path=${project_arr[${index}]}
+    fi
+
     # 用图形化选择项目
-    load_project $2
+    load_project $proj_path
     ;;
 "-cr")
     generate_proj_cmake_file.sh debug

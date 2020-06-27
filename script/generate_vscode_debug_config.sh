@@ -2,7 +2,7 @@
 
 #########################################################
 # 全局变量
-TMP_PROJECT_INFO=/usr/local/etc/current_project.tmp
+TMP_PROJECT_INFO=$HOME/.current_project.tmp
 CURRENT_PATH=`pwd`
 ##########################################################################
 #加载项目的配置
@@ -19,7 +19,7 @@ echo "        \"tasks\": ["                                             >> tasks
 echo "            {"                                                    >> tasks.json
 echo "                \"type\": \"shell\","                             >> tasks.json
 echo "                \"label\": \"compile script\","                   >> tasks.json
-echo "                \"command\": \"$COMPILE_SCRIPT_PATH/project\","   >> tasks.json
+echo "                \"command\": \"$COMPILE_SCRIPT_PATH\","           >> tasks.json
 echo "                \"args\": ["                                      >> tasks.json
 echo "                    \"$COMPILE_SCRIPT_ARGS\""                     >> tasks.json
 echo "                ],"                                               >> tasks.json
@@ -46,7 +46,7 @@ echo "        {"                                                        >> launc
 echo "            \"name\": \"gdb_debug\","                             >> launch.json
 echo "            \"type\": \"cppdbg\","                                >> launch.json
 echo "            \"request\": \"launch\","                             >> launch.json
-echo "            \"program\": \"$PROJ_BIN_OUTPUT_DIR/$PROJ_EXEC_NAME\"," >> launch.json
+echo "            \"program\": \"$PROJ_BIN_OUTPUT_DIR/debug/$PROJ_EXEC_NAME\"," >> launch.json
 echo "            \"args\": [\"$PROJ_EXEC_ARGS\"],"                     >> launch.json
 echo "            \"stopAtEntry\": false,"                              >> launch.json
 echo "            \"cwd\": \"$PROJ_PROJECT_PATH\","                     >> launch.json

@@ -70,7 +70,7 @@ function generate_project()
     mkdir $PROJECT_PATH/output/release/bin
     mkdir $PROJECT_PATH/output/release/lib
     mkdir $PROJECT_PATH/.proj_config
-    mkdir $PROJECT_PATH/.vscod
+    mkdir $PROJECT_PATH/.vscode
     # 创建项目配置文件和cmake编译文件
     # 只支持在当前所在目录下创建文件
     generate_proj_config.sh $PROJECT_NAME

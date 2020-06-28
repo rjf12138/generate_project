@@ -46,7 +46,7 @@ echo "        {"                                                        >> launc
 echo "            \"name\": \"gdb_debug\","                             >> launch.json
 echo "            \"type\": \"cppdbg\","                                >> launch.json
 echo "            \"request\": \"launch\","                             >> launch.json
-echo "            \"program\": \"$PROJ_BIN_OUTPUT_DIR/debug/$PROJ_EXEC_NAME\"," >> launch.json
+echo "            \"program\": \"$PROJ_BIN_OUTPUT_DIR/debug/bin/$PROJ_EXEC_NAME\"," >> launch.json
 echo "            \"args\": [\"$PROJ_EXEC_ARGS\"],"                     >> launch.json
 echo "            \"stopAtEntry\": false,"                              >> launch.json
 echo "            \"cwd\": \"$PROJ_PROJECT_PATH\","                     >> launch.json

@@ -33,9 +33,9 @@ echo "" >> ./$PROJ_CMAKE_FILE
 echo "if(CMAKE_COMPILER_IS_GNUCXX)" >> ./$PROJ_CMAKE_FILE
 
 if [ $1 == "release" ];then
-    echo "    add_compile_options(-std=c++11)" >> ./$PROJ_CMAKE_FILE
+    echo "    add_compile_options(-O2 -Wall -std=c++11)" >> ./$PROJ_CMAKE_FILE
 else
-    echo "    add_compile_options(-g -std=c++11)" >> ./$PROJ_CMAKE_FILE
+    echo "    add_compile_options(-O0 -Wall -g -ggdb -std=c++11)" >> ./$PROJ_CMAKE_FILE
 fi
 
 echo "    message(STATUS \"optional:-std=c++11\")" >>  ./$PROJ_CMAKE_FILE 
@@ -52,9 +52,9 @@ echo "project($PROJ_PROJECT_NAME)" > $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
 
 if [ $1 == "release" ];then
-    echo "set(LIBARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR/release/lib)" >> $PROJ_CMAKE_FILE
+    echo "set(LIBRARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR/release/lib)" >> $PROJ_CMAKE_FILE
 else
-    echo "set(LIBARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR/debug/lib)" >> $PROJ_CMAKE_FILE
+    echo "set(LIBRARY_OUTPUT_PATH $PROJ_LIB_OUTPUT_DIR/debug/lib)" >> $PROJ_CMAKE_FILE
 fi
 echo "aux_source_directory(. DIR_LIB_SRCS)" >> $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE

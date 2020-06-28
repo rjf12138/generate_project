@@ -17,11 +17,9 @@ function help_info()
     echo "-c                    --clean all."
     echo "-e                    --enter project exec file dir."
     echo "-w                    --open new gnome_terminal."
-    echo "-cp proj_name         --create new project."
-    echo "-sp proj_name         --set current work project."
+    echo "-cp                   --create new project."
     echo "-pp                   --print current project name."
     echo "-dr                   --daily record"
-    echo "-db                   --debug the project."
     echo "-rg                   --add remote git address"
     echo "-push                 --push to github"
     echo ""
@@ -41,17 +39,8 @@ function enter_bin_directory()
     exec gnome-terminal
 }
 
-function set_curr_project()
-{
-    if [ ! -d $1/.proj_config ]
-    then
-        echo "$1 is not a project."
-        echo "can't find .proj_config."
-        exit 0
-    fi
-    echo "CURR_PROJ=$1" > /usr/local/etc/project.ini
-}
-
+# 只能在给定的路径下创建项目
+# generate_project proj_path proj_name
 function generate_project()
 {
     if [ -d $1 ]
@@ -60,46 +49,45 @@ function generate_project()
         exit 1
     fi
 
-    PROJECT_NAME=$1
+    PROJECT_NAME=$2
+    PROJECT_PATH=$1
 
     # 创建项目目录和配置文件
-    mkdir ./$PROJECT_NAME/
-    mkdir ./$PROJECT_NAME/config
-    mkdir ./$PROJECT_NAME/doc
-    mkdir ./$PROJECT_NAME/inc
-    mkdir ./$PROJECT_NAME/lib
-    mkdir ./$PROJECT_NAME/lib/debug
-    mkdir ./$PROJECT_NAME/lib/release
-    mkdir ./$PROJECT_NAME/main
-    mkdir ./$PROJECT_NAME/src
-    mkdir ./$PROJECT_NAME/output
-    mkdir ./$PROJECT_NAME/output/debug
-    mkdir ./$PROJECT_NAME/output/debug/bin
-    mkdir ./$PROJECT_NAME/output/debug/lib
-    mkdir ./$PROJECT_NAME/output/release
-    mkdir ./$PROJECT_NAME/output/release/bin
-    mkdir ./$PROJECT_NAME/output/release/lib
-    mkdir ./$PROJECT_NAME/.proj_config
-    mkdir ./$PROJECT_NAME/.vscode
-
+    mkdir $PROJECT_PATH/
+    mkdir $PROJECT_PATH/config
+    mkdir $PROJECT_PATH/doc
+    mkdir $PROJECT_PATH/inc
+    mkdir $PROJECT_PATH/lib
+    mkdir $PROJECT_PATH/lib/debug
+    mkdir $PROJECT_PATH/lib/release
+    mkdir $PROJECT_PATH/main
+    mkdir $PROJECT_PATH/src
+    mkdir $PROJECT_PATH/output
+    mkdir $PROJECT_PATH/output/debug
+    mkdir $PROJECT_PATH/output/debug/bin
+    mkdir $PROJECT_PATH/output/debug/lib
+    mkdir $PROJECT_PATH/output/release
+    mkdir $PROJECT_PATH/output/release/bin
+    mkdir $PROJECT_PATH/output/release/lib
+    mkdir $PROJECT_PATH/.proj_config
+    mkdir $PROJECT_PATH/.vscod
     # 创建项目配置文件和cmake编译文件
     # 只支持在当前所在目录下创建文件
     generate_proj_config.sh $PROJECT_NAME
+
+    # 初始化git
+    cd $PROJECT_PATH
+    git init
 }
 
 function clean_project()
 {
     if [[ $PROJ_PROJECT_PATH != "" ]];then
-        rm -r $PROJ_PROJECT_PATH/output/release/bin/
-        rm -r $PROJ_PROJECT_PATH/output/release/lib/
-        rm -r $PROJ_PROJECT_PATH/output/debug/bin/
-        rm -r $PROJ_PROJECT_PATH/output/debug/lib/
+        rm -rf $PROJ_PROJECT_PATH/output/release/bin/*
+        rm -rf $PROJ_PROJECT_PATH/output/release/lib/*
+        rm -rf $PROJ_PROJECT_PATH/output/debug/bin/*
+        rm -rf $PROJ_PROJECT_PATH/output/debug/lib/*
         rm -rf $PROJ_PROJECT_PATH/./build/
-
-        mkdir -p $PROJ_PROJECT_PATH/output/release/bin/
-        mkdir -p $PROJ_PROJECT_PATH/output/release/lib/
-        mkdir -p $PROJ_PROJECT_PATH/output/debug/bin/
-        mkdir -p $PROJ_PROJECT_PATH/output/debug/lib/
     fi
 
     echo "clean over"
@@ -149,9 +137,9 @@ function compile_and_install()
     # 将项目下的 config 配置文件拷贝到可执行文件所在目录
     if [[ `ls -A ./config/` != "" ]];then
         if [ $3 == "release" ];then
-            cp -rf ./config/ $PROJ_CONFIG_OUTPUT_DIR/release/bin
+            cp -rf ./config/ ./output/release/bin
         else
-            cp -rf ./config/ $PROJ_CONFIG_OUTPUT_DIR/debug/bin
+            cp -rf ./config/ ./output/debug/bin
         fi
     fi
     
@@ -305,10 +293,12 @@ case $1 in
 "-cr")
     generate_proj_cmake_file.sh debug
     compile_and_install -cr $PROJ_PROJECT_PATH debug
+    generate_vscode_debug_config.sh
     ;;
 "-r")
     generate_proj_cmake_file.sh debug
     compile_and_install -r $PROJ_PROJECT_PATH debug
+    generate_vscode_debug_config.sh
     ;;
 "-rr")
     generate_proj_cmake_file.sh release
@@ -318,25 +308,28 @@ case $1 in
     clean_project
     ;;
 "-e")
-    enter_bin_directory $PROJ_PROJECT_PATH/bin
+    bin_path=`cat $TMP_PROJECT_INFO 2> /dev/null | grep gen_bin_path | awk -F[=] '{print $2}' | tr -s '\n'`
+    enter_bin_directory $bin_path
     ;;
 "-w")
     gnome-terminal
     ;;
 "-cp")
-    if [ $# -ne 2 ]
-    then
-        help_info
+    proj_name=$(whiptail --title "创建项目" --inputbox "输入名称项目" 10 60 3>&1 1>&2 2>&3)
+    exitstatus=$?
+    if [ $exitstatus != 0 ]; then
+        echo "You chose Cancel."
+        exit 1
     fi
-    generate_project $2
-    load_project $2
-    ;;
-"-sp")
-    if [ $# -ne 2 ]
-    then
-        help_info
+
+    if [ -z "$proj_name" ];then
+        echo "project name is empty."
+        exit 1
     fi
-    set_curr_project $2
+
+    proj_path="`pwd`/$proj_name"
+    generate_project $proj_path $proj_name 
+    load_project $proj_path
     ;;
 "-pp")
     cat $TMP_PROJECT_INFO
@@ -351,12 +344,8 @@ case $1 in
     write_project_daily_record.sh
     clear
     ;;
-"-db")
-    generate_vscode_debug_config.sh
-    ;;
 "-rg")
     cd $PROJ_PROJECT_PATH
-    git init
 
     note="输入远程github仓库地址\n(git remote add origin git@github.com:XXXX/XXXXX.git)"
     Doing=$(whiptail --title "title" --inputbox "echo -e $note" 10 60  3>&1 1>&2 2>&3)

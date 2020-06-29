@@ -3,7 +3,9 @@
 ################################################################
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
+EXTERN_RESOURSE_PATH="`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/script/extern"
 CURRENT_PATH=`pwd`
+cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'
 ################################################################
 #基础的工具函数
 function help_info() 
@@ -75,9 +77,16 @@ function generate_project()
     # 只支持在当前所在目录下创建文件
     generate_proj_config.sh $PROJECT_NAME
 
+    # 添加一些基本的头文见和测试库
+    cp -rf $EXTERN_RESOURSE_PATH/gtest/include/* $PROJECT_PATH/inc/
+    cp -rf $EXTERN_RESOURSE_PATH/gtest/lib/* $PROJECT_PATH/lib/debug
+    cp -rf $EXTERN_RESOURSE_PATH/basic_head.h $PROJECT_PATH/inc/
+    
     # 初始化git
     cd $PROJECT_PATH
     git init
+    git add -A .
+	git commit -m "first commit"
 }
 
 function clean_project()
@@ -180,7 +189,8 @@ function load_project()
     source $1/.proj_config/proj_config.sh
     cd $1
     project_path=`pwd`
-    echo "project_config=$project_path/.proj_config/proj_config.sh" > $TMP_PROJECT_INFO
+    echo "`cat $TMP_PROJECT_INFO | grep install_path`" > $TMP_PROJECT_INFO
+    echo "project_config=$project_path/.proj_config/proj_config.sh" >> $TMP_PROJECT_INFO
     echo "project_name=$PROJ_PROJECT_NAME" >> $TMP_PROJECT_INFO
     echo "project_uuid=$PROJ_UUID" >> $TMP_PROJECT_INFO
     echo "project_path=$PROJ_PROJECT_PATH" >> $TMP_PROJECT_INFO
@@ -235,7 +245,7 @@ fi
 ##########################################################################
 #加载项目的配置
 project_config=`cat $TMP_PROJECT_INFO 2> /dev/null | grep project_config | awk -F[=] '{print $2}' | tr -s '\n'`
-if [ $project_config != "" ] && [ -f $project_config ];then
+if [ ! -z $project_config ] && [ -f $project_config ];then
     source $project_config
 fi
 ##########################################################################
@@ -336,8 +346,8 @@ case $1 in
     ;;
 "-t")
     project_path=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
-    cp $project_path/../src/*.cc $project_path/src/
-    cp $project_path/../src/*.h $project_path/inc/
+    cp $EXTERN_RESOURSE_PATH/test_code/*.cc $project_path/src/
+    cp $EXTERN_RESOURSE_PATH/test_code/*.h $project_path/inc/
     mv $project_path/src/main.cc $project_path/main/
     ;;
 "-dr")

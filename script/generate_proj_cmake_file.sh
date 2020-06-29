@@ -96,9 +96,9 @@ echo "" >> $PROJ_CMAKE_FILE
 # 匹配满足 .cc 和 .cpp 后缀的文件
 for src_file in `ls | grep -E ".cc|.cpp|.c"`
 do
-    echo "add_executable($PROJ_EXEC_NAME $src_file)" >> $PROJ_CMAKE_FILE
+    echo "add_executable($src_file $src_file)" >> $PROJ_CMAKE_FILE
+    echo "target_link_libraries($src_file $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
+    echo "" >> $PROJ_CMAKE_FILE
 done
-
-echo "target_link_libraries($PROJ_EXEC_NAME $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
 
 exit 0

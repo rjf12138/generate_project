@@ -377,14 +377,14 @@ case $1 in
     if [ $exitstatus != 0 ]; then
         echo "You chose Cancel."
     fi
-    $Doing
+    git remote add origin $Doing
     ;;
 "-push")
     cd $PROJ_PROJECT_PATH
 
     git add -A .
-	git commit -m "$date"
-	git push -u origin $PROJ_PROJECT_PATH
+	git commit -m "`date`"
+	git push -u origin master
     ;;
 *)
     help_info

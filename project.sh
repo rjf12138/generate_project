@@ -5,7 +5,6 @@
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
 EXTERN_RESOURSE_PATH="`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/script/extern"
 CURRENT_PATH=`pwd`
-cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'
 ################################################################
 #基础的工具函数
 function help_info() 
@@ -248,8 +247,23 @@ project_config=`cat $TMP_PROJECT_INFO 2> /dev/null | grep project_config | awk -
 if [ ! -z $project_config ] && [ -f $project_config ];then
     source $project_config
 fi
-##########################################################################
 
+# 当项目未加载时， 执行cmd_lists中的命令会报错
+if [ -z $project_config ];then
+    cmd_lists=("-r" "-rr" "-c" "-cr" "-e" "-rg" "-dr" "-t" "-push")
+    for cmd in ${cmd_lists[@]}
+    do
+        if [ $1 == $cmd ];then
+            echo "There is not load any project."
+            echo "Use \"project -l\" load a project or \"project -cp\" create project."
+            echo "More information see \"project -h\""
+            exit 1
+        fi
+    done
+fi
+
+##########################################################################
+# 记录历史打开的配置
 if [ ! -f $HOME/.project_history ];then
     touch $HOME/.project_history
     echo /dev/null > $HOME/.project_history
@@ -358,7 +372,7 @@ case $1 in
     cd $PROJ_PROJECT_PATH
 
     note="输入远程github仓库地址\n(git remote add origin git@github.com:XXXX/XXXXX.git)"
-    Doing=$(whiptail --title "title" --inputbox "echo -e $note" 10 60  3>&1 1>&2 2>&3)
+    Doing=$(whiptail --title "title" --inputbox "$note" 10 60  3>&1 1>&2 2>&3)
     exitstatus=$?
     if [ $exitstatus != 0 ]; then
         echo "You chose Cancel."

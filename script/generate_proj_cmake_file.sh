@@ -68,11 +68,15 @@ else
     link_lib=`ls ../lib/debug/`
 fi
 
-for static_lib in `echo $link_lib | sed 's/^lib//' | sed 's/\.a$//'`
+for static_lib_file in `echo $link_lib`
 do
+    static_lib=`echo $static_lib_file | grep ^lib | grep .a | sed 's/^lib//' | sed 's/\.a$//'`
+    if [ -z $static_lib ];then
+        continue
+    fi
     echo "target_link_libraries($PROJ_PROJECT_NAME -l$static_lib)" >> $PROJ_CMAKE_FILE
 done
-
+# 系统库，如pthread，在.proj_config/proj_config.sh配置 PROJ_LIB_LINK_LIST 中修改
 for extern_lib in `echo $PROJ_LIB_LINK_LIST`
 do
     echo "target_link_libraries($PROJ_PROJECT_NAME -l$extern_lib)" >> $PROJ_CMAKE_FILE

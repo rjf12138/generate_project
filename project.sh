@@ -96,6 +96,14 @@ function clean_project()
         rm -rf $PROJ_PROJECT_PATH/output/debug/bin/*
         rm -rf $PROJ_PROJECT_PATH/output/debug/lib/*
         rm -rf $PROJ_PROJECT_PATH/./build/
+
+        # 删除cmake配置文件
+        for cmake_file in `find $PROJ_PROJECT_PATH/ -name CMakeLists.txt`
+        do
+            if [ ! -z `echo $cmake_file | grep CMakeLists.txt` ];then
+                rm -f $cmake_file
+            fi
+        done
     fi
 
     echo "clean over"
@@ -111,12 +119,6 @@ function compile_and_install()
     fi
 
     cd $2
-    if [ ! -f ./CMakeLists.txt ]
-    then
-        echo "can't find CMakeLists.txt path."
-        return 0
-    fi
-
     case $1 in
     "-cr")
         clean_project
@@ -137,6 +139,7 @@ function compile_and_install()
     # 编译项目
     # 项目的可执行文件或是库根据生成的cmake_file
     # 决定输出位置
+    generate_proj_cmake_file.sh $3
     cd build
     cmake ..
     make
@@ -315,17 +318,14 @@ case $1 in
     load_project $proj_path
     ;;
 "-cr")
-    generate_proj_cmake_file.sh debug
     compile_and_install -cr $PROJ_PROJECT_PATH debug
     generate_vscode_debug_config.sh
     ;;
 "-r")
-    generate_proj_cmake_file.sh debug
     compile_and_install -r $PROJ_PROJECT_PATH debug
     generate_vscode_debug_config.sh
     ;;
 "-rr")
-    generate_proj_cmake_file.sh release
     compile_and_install -cr $PROJ_PROJECT_PATH release
     ;;
 "-c")

@@ -25,7 +25,9 @@ if [ -z `$JSON_PARSE $COMPILE_CONFIG_PATH 项目md5编码`];then
     compiler="g++"
     release_compile_option="-O2 -Wall -std=c++11"
     debug_compile_option="-O0 -Wall -g -ggdb -std=c++1"
-    main_file_list=`ls ./main/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
+    head_file_path=$PROJ_PROJECT_PATH/inc
+    lib_file_path=$PROJ_PROJECT_PATH/lib/$compile_method
+    exe_file_list=`ls ./main/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
     src_file_list=`ls ./src/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
     static_lib_file_list=`cd ./lib/$compile_method/; ls *.a | tr -s " " | awk '{ORS=" "; print $1}'`
     share_lib_file_list=`cd ./lib/$compile_method/; ls *.so | tr -s " " | awk '{ORS=" "; print $1}'`

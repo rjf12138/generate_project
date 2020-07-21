@@ -37,8 +37,13 @@ function enter_bin_directory()
         exit 0
     fi
     cd $dir
-    # 打开新的标签页
-    exec gnome-terminal --tab
+    # 检查当前是不是在gnome-terminal下
+    # 如果是就直接打开标签，不是就打开新窗口
+    gnome-terminal --tab 2> /tmp/terminal_error
+
+    if [ -n `cat /tmp/terminal_error` ];then
+        exec gnome-terminal
+    fi
 }
 
 # 只能在给定的路径下创建项目

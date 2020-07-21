@@ -41,12 +41,11 @@ fi
 echo "    message(STATUS \"optional:-std=c++11\")" >>  ./$PROJ_CMAKE_FILE 
 echo "endif(CMAKE_COMPILER_IS_GNUCXX)" >> ./$PROJ_CMAKE_FILE
 echo "" >> ./$PROJ_CMAKE_FILE
-echo "add_subdirectory(./main)" >> ./$PROJ_CMAKE_FILE
 
 
 # 在src目录下创建cmakefile
-
-if [ ! -z `ls $PROJ_PROJECT_PATH/src/ | grep .c`];then
+src_file_list=`ls $PROJ_PROJECT_PATH/src/ | grep .c`
+if [ -n "$src_file_list" ];then
     echo "add_subdirectory(./src)" >> $PROJ_PROJECT_PATH/$PROJ_CMAKE_FILE
 
     cd $PROJ_PROJECT_PATH/src/
@@ -91,6 +90,8 @@ fi
 cd $PROJ_PROJECT_PATH/main/
 touch $PROJ_CMAKE_FILE
 
+echo "add_subdirectory(./main)" >> $PROJ_PROJECT_PATH/$PROJ_CMAKE_FILE
+
 echo "project($PROJ_PROJECT_NAME)" > $PROJ_CMAKE_FILE
 echo "" >> $PROJ_CMAKE_FILE
 
@@ -109,13 +110,9 @@ do
     echo "add_executable($bin_name $src_file)" >> $PROJ_CMAKE_FILE
 
     if [ $1 == "release" ];then
-        if [ -f "$PROJ_LIB_OUTPUT_DIR/release/lib/lib$PROJ_PROJECT_NAME.a" ];then
-            echo "target_link_libraries($bin_name $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
-        fi
+        echo "target_link_libraries($bin_name $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
     else
-        if [ -f "$PROJ_LIB_OUTPUT_DIR/debug/lib/lib$PROJ_PROJECT_NAME.a" ];then
-            echo "target_link_libraries($bin_name $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
-        fi
+        echo "target_link_libraries($bin_name $PROJ_PROJECT_NAME)" >> $PROJ_CMAKE_FILE
     fi
     
     echo "" >> $PROJ_CMAKE_FILE

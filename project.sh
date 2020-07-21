@@ -37,7 +37,8 @@ function enter_bin_directory()
         exit 0
     fi
     cd $dir
-    exec gnome-terminal
+    # 打开新的标签页
+    exec gnome-terminal --tab
 }
 
 # 只能在给定的路径下创建项目

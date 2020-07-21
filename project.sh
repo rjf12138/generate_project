@@ -40,7 +40,6 @@ function enter_bin_directory()
     # 检查当前是不是在gnome-terminal下
     # 如果是就直接打开标签，不是就打开新窗口
     gnome-terminal --tab 2> /tmp/terminal_error
-
     if [ -n `cat /tmp/terminal_error` ];then
         exec gnome-terminal
     fi

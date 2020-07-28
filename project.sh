@@ -40,7 +40,8 @@ function enter_bin_directory()
     # 检查当前是不是在gnome-terminal下
     # 如果是就直接打开标签，不是就打开新窗口
     gnome-terminal --tab 2> /tmp/terminal_error
-    if [ -n `cat /tmp/terminal_error` ];then
+    file_size=`du /tmp/terminal_error | awk '{ORS="";print $1}'`
+    if [ $file_size != "0" ];then
         exec gnome-terminal
     fi
 }
@@ -149,7 +150,7 @@ function compile_and_install()
     cmake ..
     make
     cd ..
-
+    echo "------------ $3 ---------------"
     # 将项目下的 config 配置文件拷贝到可执行文件所在目录
     if [[ `ls -A ./config/` != "" ]];then
         if [ $3 == "release" ];then

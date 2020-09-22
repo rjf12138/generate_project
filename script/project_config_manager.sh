@@ -7,10 +7,11 @@
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
 CURRENT_PATH=`pwd`
+PROJ_PROJECT_PATH=$CURRENT_PATH
 ##########################################################################
 #加载项目的配置
-project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
-source $project_config
+#project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
+#source $project_config
 ##########################################################################
 COMPILE_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/compile_config.json
 JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
@@ -21,28 +22,27 @@ cd $PROJ_PROJECT_PATH
 # # 只能打印当前节点以及其下级数组的元素
 function print_obj_val()
 {
-echo '<< EOF
+$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
 print $1
 quit
-EOF' | $JSON_PARSE $COMPILE_CONFIG | tr -d "\n"
+EOF
 }
 
-function print_array_val()
+function print_arr_val()
 {
-echo '<< EOF
+$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
 cd $1
 print $2
 quit
-EOF' | $JSON_PARSE $COMPILE_CONFIG | tr -d "\n"
+EOF
 }
 
-function print_array_all()
+function print_arr_all()
 {
-echo '<< EOF
-cd $1
-print $2
+$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+print $1
 quit
-EOF' | $JSON_PARSE $COMPILE_CONFIG | tr -d "\n"
+EOF
 }
 
 ###########################################################################
@@ -64,12 +64,12 @@ function config_project_config()
 	debug_compile_option=`print_obj_val debug版编译选项`
 	release_compile_option=`print_obj_val release版编译选项`
 	current_generate_file_type=`print_obj_val 当前生成文件类型`
-	generate_file_type_list=`print_arr_val 可生成文件类型`
+	generate_file_type_list=`print_arr_all 可生成文件类型`
 	current_program_entry_file=`print_obj_val 当前程序入口文件`
-	program_entry_file_list=`print_arr_val 程序入口文件列表`
-	header_file_path_list=`print_arr_val 头文件目录列表`
-	static_lib_dir_list=`print_arr_val 静态库目录列表`
-	src_file_dir_list=`print_arr_val 源文件目录列表`
+	program_entry_file_list=`print_arr_all 程序入口文件列表`
+	header_file_path_list=`print_arr_all 头文件目录列表`
+	static_lib_dir_list=`print_arr_all 静态库目录列表`
+	src_file_dir_list=`print_arr_all 源文件目录列表`
 	project_uuid=`print_obj_val 项目UUID`
 
 	while true
@@ -80,6 +80,8 @@ function config_project_config()
 								">当前程序入口文件: ",  $current_program_entry_file, ">头文件目录列表", ""
 								">静态库目录列表", "", ">源文件目录列表", "退出"， "")
 		project_config_num=`expr ${#project_config_info[*]} / 2`
+		echo $project_config_num
+		echo ${project_config_info[@]}
 		OPTION=$(whiptail --title "Menu Dialog" --menu "项目配置" 15 60 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
 
 		exitstatus=$?
@@ -104,7 +106,7 @@ function config_project_config()
 					echo "You chose Cancel."
 					break
 				fi
-
+		
 				case $OPTION in
 					"添加源文件目录")
 						new_dir=$(whiptail --title "添加源文件目录" --inputbox "" 10 60 3>&1 1>&2 2>&3)
@@ -139,6 +141,7 @@ function config_project_config()
 						do
 							src_file_dir_list=`echo $src_file_dir_list | sed "s/$del_file//g"`
 						done
+						;;
 					"源文件目录列表")
 						for src_file in $src_file_dir_list
 						do
@@ -156,13 +159,14 @@ function config_project_config()
 							echo "You chose Cancel."
 							break
 						fi
+						;;
+				esac
 				;;
 			">静态库目录列表")
 				OPTION=$(whiptail --title "Menu Dialog" --menu "静态库目录" 15 60 2 \
 				"1" "添加静态库目录" \
 				"2" "删除静态库目录" \
-				"3" "静态库目录列表" \
-				3>&1 1>&2 2>&3)
+				"3" "静态库目录列表" 3>&1 1>&2 2>&3)
 
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
@@ -204,6 +208,7 @@ function config_project_config()
 						do
 							static_lib_dir_list=`echo $static_lib_dir_list | sed "s/$del_file//g"`
 						done
+						;;
 					"静态库目录列表")
 						for static_lib_file in $static_lib_dir_list
 						do
@@ -220,6 +225,8 @@ function config_project_config()
 							echo "You chose Cancel."
 							break
 						fi
+						;;
+				esac
 				;;
 			">头文件目录列表")
 				OPTION=$(whiptail --title "Menu Dialog" --menu "头文件目录" 15 60 2 \
@@ -268,6 +275,7 @@ function config_project_config()
 						do
 							header_file_path_list=`echo $header_file_path_list | sed "s/$del_head_file//g"`
 						done
+						;;
 					"头文件目录列表")
 						for header_file in $header_file_path_list
 						do
@@ -285,6 +293,8 @@ function config_project_config()
 							echo "You chose Cancel."
 							break
 						fi
+						;;
+				esac
 				;;
 			">当前程序入口文件: ")
 				for entry_file in $program_entry_file_list
@@ -376,3 +386,7 @@ function config_project_config()
 		esac
 	done
 }
+
+config_project_config
+
+exit 0

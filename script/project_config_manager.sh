@@ -76,7 +76,7 @@ function config_project_config()
 	do
 		# whiptail 的值不能以 ‘-’开始
 		project_config_info=("*项目名称: " "$project_name" "*项目UUID: " "$project_uuid" "*项目路径: " "$project_path" 
-								">当前编译器: " "$current_compiler" ">编译方式: " "$compile_method" "debug编译选项: " "$debug_compile_option"
+								">当前编译器: " "$current_compiler" ">编译方式: " "$compile_method" ">debug编译选项: " "$debug_compile_option"
 								">release版编译选项: " "$release_compile_option" ">当前生成文件类型: " "$current_generate_file_type"
 								">当前程序入口文件: "  "$current_program_entry_file" ">头文件目录列表" "查看"
 								">静态库目录列表" "查看" ">源文件目录列表" "查看" "退出" "")

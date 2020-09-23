@@ -53,9 +53,9 @@ EOF
 
 function config_project_config()
 {
-	project_option=("项目名称", "项目路径", "当前编译器", "可选编译器列表", "编译方式", "debug版编译选项",
-					"release版编译选项", "当前生成文件类型", "可生成文件类型", "当前程序入口文件", "程序入口文件列表", 
-					"头文件目录列表", "静态库目录列表", "源文件目录列表", "项目UUID")
+	project_option=("项目名称" "项目路径" "当前编译器" "可选编译器列表" "编译方式" "debug版编译选项"
+					"release版编译选项" "当前生成文件类型" "可生成文件类型" "当前程序入口文件" "程序入口文件列表"
+					"头文件目录列表" "静态库目录列表" "源文件目录列表" "项目UUID")
     project_name=`print_obj_val 项目名称`
 	project_path=`print_obj_val 项目路径`
 	current_compiler=`print_obj_val 当前编译器`
@@ -74,15 +74,16 @@ function config_project_config()
 
 	while true
 	do
-		project_config_info=("*项目名称: ", $project_name, "*项目UUID: ", $project_uuid, "*项目路径: ", $project_path, 
-								">当前编译器: ", $current_compiler, ">编译方式: ", $compile_method, ">debug版编译选项: ", $debug_compile_option,
-								">release版编译选项: ", $release_compile_option, ">当前生成文件类型: ", $current_generate_file_type,
-								">当前程序入口文件: ",  $current_program_entry_file, ">头文件目录列表", ""
-								">静态库目录列表", "", ">源文件目录列表", "退出"， "")
+		# whiptail 的值不能以 ‘-’开始
+		project_config_info=("*项目名称: " "$project_name" "*项目UUID: " "$project_uuid" "*项目路径: " "$project_path" 
+								">当前编译器: " "$current_compiler" ">编译方式: " "$compile_method" "debug编译选项: " "$debug_compile_option"
+								">release版编译选项: " "$release_compile_option" ">当前生成文件类型: " "$current_generate_file_type"
+								">当前程序入口文件: "  "$current_program_entry_file" ">头文件目录列表" "查看"
+								">静态库目录列表" "查看" ">源文件目录列表" "查看" "退出" "")
 		project_config_num=`expr ${#project_config_info[*]} / 2`
 		echo $project_config_num
 		echo ${project_config_info[@]}
-		OPTION=$(whiptail --title "Menu Dialog" --menu "项目配置" 15 60 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
+		OPTION=$(whiptail --title "Menu Dialog" --menu "项目配置" 30 90 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
 
 		exitstatus=$?
 		if [ $exitstatus != 0 ]; then

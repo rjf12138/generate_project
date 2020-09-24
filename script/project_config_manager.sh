@@ -40,7 +40,8 @@ EOF
 function print_arr_all()
 {
 $JSON_PARSE $COMPILE_CONFIG_PATH << EOF
-print $1
+cd $1
+print
 quit
 EOF
 }
@@ -77,13 +78,12 @@ function config_project_config()
 		# whiptail 的值不能以 ‘-’开始
 		project_config_info=("*项目名称: " "$project_name" "*项目UUID: " "$project_uuid" "*项目路径: " "$project_path" 
 								">当前编译器: " "$current_compiler" ">编译方式: " "$compile_method" ">debug编译选项: " "$debug_compile_option"
-								">release版编译选项: " "$release_compile_option" ">当前生成文件类型: " "$current_generate_file_type"
+								">release编译选项: " "$release_compile_option" ">当前生成文件类型: " "$current_generate_file_type"
 								">当前程序入口文件: "  "$current_program_entry_file" ">头文件目录列表" "查看"
-								">静态库目录列表" "查看" ">源文件目录列表" "查看" "退出" "")
+								">静态库目录列表" "查看" ">源文件目录列表" "查看")
+
 		project_config_num=`expr ${#project_config_info[*]} / 2`
-		echo $project_config_num
-		echo ${project_config_info[@]}
-		OPTION=$(whiptail --title "Menu Dialog" --menu "项目配置" 30 90 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
+		OPTION=$(whiptail --title "Menu Dialog" --menu "项目配置" 20 50 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
 
 		exitstatus=$?
 		if [ $exitstatus != 0 ]; then
@@ -317,7 +317,7 @@ function config_project_config()
 				current_program_entry_file=$OPTION
 				;;
 			">当前生成文件类型: ")
-				OPTION=$(whiptail --title "Menu Dialog" --menu "生成文件类型" 15 60 2 \
+				OPTION=$(whiptail --title "Menu Dialog" --menu "生成文件类型" 15 60 3 \
 				"1" "exe" \
 				"2" "static_lib" \
 				"3" "shared_lib" \
@@ -329,9 +329,16 @@ function config_project_config()
 					break
 				fi
 
-				current_generate_file_type=$OPTION
+				if [ $OPTION == "1" ];then
+					current_generate_file_type="exe"
+				elif [ $OPTION == "2" ];then
+					current_generate_file_type="static_lib"
+				else
+					current_generate_file_type="shared_lib"
+				fi
 				;;
 			">当前编译器: ")
+				unset choose_compiler #清空数组元素，防止下次循环回来数组元素添加出现叠加现象
 				for compile in $compiler_list
 				do
 					compile_num=`expr ${#choose_compiler[*]} / 2 `
@@ -340,18 +347,18 @@ function config_project_config()
 				done
 
 				compile_num=`expr ${#choose_compiler[*]} / 2`
-				OPTION=$(whiptail --title "Menu Dialog" --menu "选择编译器" 15 60 $compile_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
+				OPTION=$(whiptail --title "Menu Dialog" --menu "选择编译器" 15 60 $compile_num "${choose_compiler[@]}"  3>&1 1>&2 2>&3)
 
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
 					echo "You chose Cancel."
 					break
 				fi
-
-				current_compiler=$OPTION
+				index=$[$OPTION * 2 + 1]
+				current_compiler=${choose_compiler[$index]}
 				;;
 			">编译方式: ")
-				OPTION=$(whiptail --title "Menu Dialog" --menu "选择编译方式" 15 60 2 \
+				OPTION=$(whiptail --title "选择编译方式" --menu "选择编译方式" 15 60 2 \
 				"1" "debug" \
 				"2" "release" \
 				3>&1 1>&2 2>&3)
@@ -362,10 +369,14 @@ function config_project_config()
 					break
 				fi
 
-				compile_method=$OPTION
+				if [ $OPTION == "1" ];then
+					compile_method="debug"
+				else
+					compile_method="release"
+				fi
 			;;
-			">debug版编译选项: ")
-				compile_option=$(whiptail --title "Input Box" --inputbox "Debug编译器选项" 10 60 $debug_compile_option 3>&1 1>&2 2>&3)
+			">debug编译选项: ")
+				compile_option=$(whiptail --title "Debug编译器选项" --inputbox "注意：不要去掉最前面的'#'" 10 60 $debug_compile_option 3>&1 1>&2 2>&3)
 
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
@@ -374,8 +385,8 @@ function config_project_config()
 				fi
 				debug_compile_option=$compile_option
 			;;
-			">release版编译选项: ")
-				compile_option=$(whiptail --title "Input Box" --inputbox "Release编译器选项" 10 60 $ 3>&1 1>&2 2>&3)
+			">release编译选项: ")
+				compile_option=$(whiptail --title "Release编译器选项" --inputbox "注意：不要去掉最前面的'#'" 10 60 $release_compile_option 3>&1 1>&2 2>&3)
 
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then

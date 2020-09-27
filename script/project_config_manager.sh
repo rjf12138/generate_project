@@ -46,6 +46,40 @@ quit
 EOF
 }
 
+function set_obj_val()
+{
+$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+set str $1 $2
+write
+quit
+EOF
+}
+
+# set_arr_all 参数名称 以空格为分割的字符串
+function set_arr_all()
+{
+	old_val=`print_arr_all $1`
+	for del_val in $old_val
+	do
+$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+cd $1
+del 0
+write
+quit
+EOF
+	done
+
+	for param in $1
+	do
+$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+cd $1
+add str $param
+write
+quit
+EOF
+	done
+}
+
 ###########################################################################
 # exe_file_list=`ls ./main/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
 # src_file_list=`ls ./src/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`

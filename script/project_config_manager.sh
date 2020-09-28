@@ -48,6 +48,8 @@ EOF
 
 function set_obj_val()
 {
+	echo $1 $2 >> ~/FILE.TXT
+
 $JSON_PARSE $COMPILE_CONFIG_PATH << EOF
 set str $1 $2
 write
@@ -58,6 +60,8 @@ EOF
 # set_arr_all 参数名称 以空格为分割的字符串
 function set_arr_all()
 {
+	echo $1 $2 >> ~/FILE.TXT
+
 	old_val=`print_arr_all $1`
 	for del_val in $old_val
 	do
@@ -69,7 +73,7 @@ quit
 EOF
 	done
 
-	for param in $1
+	for param in $2
 	do
 $JSON_PARSE $COMPILE_CONFIG_PATH << EOF
 cd $1
@@ -80,6 +84,7 @@ EOF
 	done
 }
 
+echo > ~/FILE.TXT
 ###########################################################################
 # exe_file_list=`ls ./main/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
 # src_file_list=`ls ./src/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
@@ -99,12 +104,12 @@ function config_project_config()
 	debug_compile_option=`print_obj_val debug版编译选项`
 	release_compile_option=`print_obj_val release版编译选项`
 	current_generate_file_type=`print_obj_val 当前生成文件类型`
-	generate_file_type_list=`print_arr_all 可生成文件类型`
 	current_program_entry_file=`print_obj_val 当前程序入口文件`
 	program_entry_file_list=`print_arr_all 程序入口文件列表`
 	header_dir_path_list=`print_arr_all 头文件目录列表`
 	static_lib_dir_list=`print_arr_all 静态库目录列表`
-	static_lib_list=`print_arr_all 静态库列表`
+	release_static_lib_list=`print_arr_all release静态库列表`
+	debug_static_lib_list=`print_arr_all debug静态库列表`
 	src_file_dir_list=`print_arr_all 源文件目录列表`
 	project_uuid=`print_obj_val 项目UUID`
 
@@ -115,25 +120,39 @@ function config_project_config()
 								">当前编译器: " "$current_compiler" ">编译方式: " "$compile_method" ">debug编译选项: " "$debug_compile_option"
 								">release编译选项: " "$release_compile_option" ">当前生成文件类型: " "$current_generate_file_type"
 								">当前程序入口文件: "  "$current_program_entry_file" ">头文件目录列表" "查看"
-								">静态库目录列表" "查看" ">静态库列表" "查看" ">源文件目录列表" "查看")
+								">静态库目录列表" "查看" ">静态库列表" "查看" ">源文件目录列表" "查看" "*退出并保存" "" "*退出不保存" "")
 
 		project_config_num=`expr ${#project_config_info[*]} / 2`
-		OPTION=$(whiptail --title "项目配置" --menu "项目配置" 20 50 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
+		OPTION=$(whiptail --title "项目配置" --menu "项目配置" 22 50 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
 
 		exitstatus=$?
 		if [ $exitstatus != 0 ]; then
 			echo "You chose Cancel."
+			return -1
+		fi
+
+		if [ $OPTION == "*退出不保存" ];then
+			return 0
+		elif [ $OPTION == "*退出并保存" ];then
 			break
 		fi
-		
+
+		echo $OPTION" "$exitstatus > ~/FILE.TXT
 		case $OPTION in
 			"*项目名称: "|"*项目UUID: "|"*项目路径: ")
 				continue
 				;;
 			">静态库列表")
+				if [ $compile_method == "release" ];then
+					title="release静态库"
+					static_lib_list=$release_static_lib_list
+				else
+					title="debug静态库"
+					static_lib_list=$debug_static_lib_list
+				fi
 				while true
 				do
-					OPTION=$(whiptail --title "Menu Dialog" --menu "静态库" 15 60 3 \
+					OPTION=$(whiptail --title "Menu Dialog" --menu "$title" 15 60 3 \
 					"1" "添加静态库" \
 					"2" "删除静态库" \
 					"3" "查看静态库列表" \
@@ -152,6 +171,13 @@ function config_project_config()
 							exitstatus=$?
 							if [ $exitstatus == 0 ]; then
 								static_lib_list=$static_lib_list" "$new_lib
+								if [ $compile_method == "release" ];then
+										release_static_lib_list=$static_lib_list
+									elif [ $compile_method == "debug" ];then
+										debug_static_lib_list=$static_lib_list
+									else
+										echo "unknow $compile_method"
+								fi
 							fi
 						;;
 						"2")
@@ -179,6 +205,13 @@ function config_project_config()
 
 								if (whiptail --title "Yes/No Box" --yesno "确定要移除 $del_static_lib" 10 60) then
 									static_lib_list=`echo $static_lib_list | sed "s#$del_static_lib##g"`
+									if [ $compile_method == "release" ];then
+										release_static_lib_list=$static_lib_list
+									elif [ $compile_method == "debug" ];then
+										debug_static_lib_list=$static_lib_list
+									else
+										echo "unknow $compile_method"
+									fi
 								else
 									echo "You chose No. Exit status was $?."
 								fi
@@ -545,6 +578,23 @@ function config_project_config()
 			;;
 		esac
 	done
+
+	set_obj_val 项目名称 "lk$project_name"
+	set_obj_val 项目路径 "$project_path"
+	set_obj_val 当前编译器 "$current_compiler"
+	set_arr_all 可选编译器列表 "$compiler_list"
+	set_obj_val 编译方式 "$compile_method"
+	set_obj_val debug版编译选项 "$debug_compile_option"
+	set_obj_val release版编译选项 "$release_compile_option"
+	set_obj_val 当前生成文件类型 "$current_generate_file_type"
+	set_obj_val 当前程序入口文件 "$current_program_entry_file"
+	set_arr_all 程序入口文件列表 "$program_entry_file_list"
+	set_arr_all 头文件目录列表 "$header_dir_path_list"
+	set_arr_all 静态库目录列表 "$static_lib_dir_list"
+	set_arr_all release静态库列表 "$release_static_lib_list"
+	set_arr_all debug静态库列表 "$debug_static_lib_list"
+	set_arr_all 源文件目录列表 "$src_file_dir_list"
+	set_obj_val 项目UUID "$project_uuid"
 }
 
 config_project_config

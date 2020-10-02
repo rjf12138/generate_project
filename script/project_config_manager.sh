@@ -597,6 +597,5 @@ function config_project_config()
 	set_obj_val 项目UUID "$project_uuid"
 }
 
-config_project_config
 
 exit 0

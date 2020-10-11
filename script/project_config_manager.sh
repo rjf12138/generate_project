@@ -123,7 +123,7 @@ function config_project_config()
 								">静态库目录列表" "查看" ">静态库列表" "查看" ">源文件目录列表" "查看" "*退出并保存" "" "*退出不保存" "")
 
 		project_config_num=`expr ${#project_config_info[*]} / 2`
-		OPTION=$(whiptail --title "项目配置" --menu "项目配置" 22 50 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
+		OPTION=$(whiptail --title "项目配置" --menu "项目配置" 24 55 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
 
 		exitstatus=$?
 		if [ $exitstatus != 0 ]; then
@@ -491,7 +491,7 @@ function config_project_config()
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
 					echo "You chose Cancel."
-					break
+					continue
 				fi
 
 				index=$[$OPTION * 2 - 1]
@@ -507,7 +507,7 @@ function config_project_config()
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
 					echo "You chose Cancel."
-					break
+					continue
 				fi
 
 				if [ $OPTION == "1" ];then
@@ -533,7 +533,7 @@ function config_project_config()
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
 					echo "You chose Cancel."
-					break
+					continue
 				fi
 				index=$[$OPTION * 2 - 1]
 				current_compiler=${choose_compiler[$index]}
@@ -547,7 +547,7 @@ function config_project_config()
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
 					echo "You chose Cancel."
-					break
+					continue
 				fi
 
 				if [ $OPTION == "1" ];then
@@ -557,29 +557,29 @@ function config_project_config()
 				fi
 			;;
 			">debug编译选项: ")
-				compile_option=$(whiptail --title "Debug编译器选项" --inputbox "注意：不要去掉最前面的'#'" 10 60 $debug_compile_option 3>&1 1>&2 2>&3)
+				compile_option=$(whiptail --title "Debug编译器选项" --inputbox "注意：不要去掉最前面的'#'" 10 60 "$debug_compile_option" 3>&1 1>&2 2>&3)
 
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
 					echo "You chose Cancel."
-					break
+					continue
 				fi
 				debug_compile_option=$compile_option
 			;;
 			">release编译选项: ")
-				compile_option=$(whiptail --title "Release编译器选项" --inputbox "注意：不要去掉最前面的'#'" 10 60 $release_compile_option 3>&1 1>&2 2>&3)
+				compile_option=$(whiptail --title "Release编译器选项" --inputbox "注意：不要去掉最前面的'#'" 10 60 "$release_compile_option" 3>&1 1>&2 2>&3)
 
 				exitstatus=$?
 				if [ $exitstatus != 0 ]; then
 					echo "You chose Cancel."
-					break
+					continue
 				fi
 				release_compile_option=$compile_option
 			;;
 		esac
 	done
 
-	set_obj_val 项目名称 "lk$project_name"
+	set_obj_val 项目名称 "$project_name"
 	set_obj_val 项目路径 "$project_path"
 	set_obj_val 当前编译器 "$current_compiler"
 	set_arr_all 可选编译器列表 "$compiler_list"
@@ -597,5 +597,6 @@ function config_project_config()
 	set_obj_val 项目UUID "$project_uuid"
 }
 
+config_project_config
 
 exit 0

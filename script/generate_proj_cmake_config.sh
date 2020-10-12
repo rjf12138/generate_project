@@ -52,18 +52,128 @@ echo "" >> $main_cmakelists_path
 #添加编译选项
 compile_option=`echo $compile_option > sed 's/#//g'` 
 echo "add_compile_options($compile_option)" >> $main_cmakelists_path
+echo "" >> $main_cmakelists_path
 
 #添加头文件目录
 for head_dir in $head_dirs
 do
     echo "include_directories($head_dir)" >> $main_cmakelists_path
 done
+echo "" >> $main_cmakelists_path
+
+#添加链接库目录
+for head_dir in $head_dirs
+do
+    echo "link_directories($head_dir)" >> $main_cmakelists_path
+done
+echo "" >> $main_cmakelists_path
 
 #添加源文件目录
+gen_lib_lists=""
 for src_dir in $src_dirs
 do
     echo "add_subdirectory($src_dir)" >> $main_cmakelists_path
+    cd $src_dir
+    if [ $? != 0 ];then
+        echo "Can't enter into $src_dir"
+        continue
+    fi
+    # 添加子目录cmakelists.txt文件
+    touch ./CMakeLists.txt
+    echo "" > ./CMakeLists.txt
+    # 判断是不是主函数目录
+    is_main_dir=`echo $src_dir | grep main | tr -d ['\n']`
+    is_entry_file=`ls | grep $program_entry_file | tr -d ['\n']`
+    # 判断是不是项目下的 src 目录
+    src_path=`pwd`
+    if [ $src_path == $PROJ_PROJECT_PATH/main ];then
+        # 记录下主函数所在目录
+        main_dir=$src_dir
+    else
+        is_empty_dir=`ls *.cc *.cpp | tr -d ['\n']`
+        if [ -z $is_empty_dir ];then
+            continue
+        fi
+        
+        echo "project($project_name)" >> ./CMakeLists.txt
+        echo "" >> ./CMakeLists.txt
+        echo "set(LIBRARY_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/lib)" >> ./CMakeLists.txt
+        echo "" >> ./CMakeLists.txt
+        echo "aux_source_directory(. DIR_LIB_SRCS)" >> ./CMakeLists.txt
+        echo "" >> ./CMakeLists.txt
+
+        # 根据时间戳设置库名称
+        lib_name=`date +%s`
+        if [ $src_path == $PROJ_PROJECT_PATH/src && $export_file_type == "exe" ];then
+            # src 目录的库名称与项目名称相同，只有这个目录会链接其他库
+            lib_name=$project_name
+            for link_lib in $static_libs
+            do
+                echo "target_link_libraries($lib_name -l$link_lib)" >> ./CMakeLists.txt
+            done
+        else if [ $src_path == $PROJ_PROJECT_PATH/src ];then
+            # 生成非可执行文件，src库cmakelists.txt之后在生成
+            continue
+        else
+            echo "add_library ($lib_name ${DIR_LIB_SRCS})" >> ./CMakeLists.txt
+            echo "" >> ./CMakeLists.txt
+        fi
+
+        gen_lib_lists=$gen_lib_lists" "$lib_name
+    fi
+    cd $PROJ_PROJECT_PATH
 done
 
-#添加链接库目录
-https://blog.csdn.net/zhuiyunzhugang/article/details/88142908
+case $export_file_type in
+"exe")
+    if [ ! -f $PROJ_PROJECT_PATH/main/$program_entry_file ];then
+        echo "Can't find program entry file"
+        exit 1
+    fi
+
+    cd $PROJ_PROJECT_PATH/main
+    echo "project($project_name)" >> ./CMakeLists.txt
+    echo "" >> ./CMakeLists.txt
+
+    echo "set(LIBRARY_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/bin)" >> ./CMakeLists.txt
+    echo "" >> ./CMakeLists.txt
+
+    for lib in $gen_lib_lists
+    do
+        echo "target_link_libraries($project_name -l$lib)" >> ./CMakeLists.txt
+    done
+    echo "" >> ./CMakeLists.txt
+
+    echo "add_executable($project_name $program_entry_file)" >> ./CMakeLists.txt
+    cd $PROJ_PROJECT_PATH
+    ;;
+"static_lib")
+    cd $PROJ_PROJECT_PATH/src
+    is_empty_dir=`ls *.cc *.cpp | tr -d ['\n']`
+    if [ -z $is_empty_dir ];then
+        echo "$src_path is empty"
+        exit 1
+    fi
+    
+    echo "project($project_name)" >> ./CMakeLists.txt
+    echo "" >> ./CMakeLists.txt
+
+    echo "set(LIBRARY_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/lib)" >> ./CMakeLists.txt
+    echo "" >> ./CMakeLists.txt
+
+    for lib in $gen_lib_lists
+    do
+        echo "target_link_libraries($project_name -l$lib)" >> ./CMakeLists.txt
+    done
+    echo "" >> ./CMakeLists.txt
+
+    echo "add_library ($project_name ${DIR_LIB_SRCS})" >> ./CMakeLists.txt
+    echo "" >> ./CMakeLists.txt
+
+    cd $PROJ_PROJECT_PATH
+    ;;
+*)
+    echo "Not support"
+esac
+
+exit 0

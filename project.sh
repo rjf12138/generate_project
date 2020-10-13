@@ -3,14 +3,19 @@
 ################################################################
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
+INSTALL_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`
 EXTERN_RESOURSE_PATH="`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/script/extern"
 CURRENT_PATH=`pwd`
 ################################################################
+pwd
+source $INSTALL_PATH/project_config_manager.sh
+
 #基础的工具函数
 function help_info() 
 {
     echo "Usage: $0 [OPTIONS] [param1 param2 ...]"
     echo "-h                    --print help info."
+    echo "-cfg                  --configuration profile"
     echo "-l                    --load project."
     echo "-cr                   --clean and rebuild project."
     echo "-r                    --rebuild without cleanning."
@@ -78,15 +83,25 @@ function generate_project()
     mkdir $PROJECT_PATH/output/release/lib
     mkdir $PROJECT_PATH/.proj_config
     mkdir $PROJECT_PATH/.vscode
+
     # 创建项目配置文件和cmake编译文件
     # 只支持在当前所在目录下创建文件
-    generate_proj_config.sh $PROJECT_NAME
 
     # 添加一些基本的头文见和测试库
     cp -rf $EXTERN_RESOURSE_PATH/gtest/include/* $PROJECT_PATH/inc/
     cp -rf $EXTERN_RESOURSE_PATH/gtest/lib/* $PROJECT_PATH/lib/debug
     cp -rf $EXTERN_RESOURSE_PATH/basic_head.h $PROJECT_PATH/inc/
-    
+    cp -rf $EXTERN_RESOURSE_PATH/project_config.json $PROJECT_PATH/.proj_config/
+    cp -rf $EXTERN_RESOURSE_PATH/exbin/parse_json $PROJECT_PATH/.proj_config/
+    echo $PROJECT_PATH/.proj_config/parse_json
+    chmod u+x $PROJECT_PATH/.proj_config/parse_json
+
+    # 初始化配置文件
+    set_obj_val 项目名称 "$PROJECT_PATH"
+    set_obj_val 项目名称 "$PROJECT_NAME"
+    project_uuid=`uuidgen`
+    set_obj_val 项目UUID "$project_uuid"
+
     # 初始化git
     cd $PROJECT_PATH
     git init
@@ -108,6 +123,19 @@ function clean_project()
         do
             if [ ! -z `echo $cmake_file | grep CMakeLists.txt` ];then
                 rm -f $cmake_file
+            fi
+        done
+
+        cd $PROJ_PROJECT_PATH
+        src_dirs=`print_arr_all 源文件目录列表`
+        for src_dir in src_dirs
+        do
+            if [ ! -d $src_dir ];then
+                continue
+            fi
+
+            if [ -f "$src_dir/CMakeLists.txt" ];then
+                rm -f $src_dir/CMakeLists.txt
             fi
         done
     fi
@@ -144,8 +172,7 @@ function compile_and_install()
 
     # 编译项目
     # 项目的可执行文件或是库根据生成的cmake_file
-    # 决定输出位置
-    generate_proj_cmake_file.sh $3
+    generate_proj_cmake_config.sh
     cd build
     cmake ..
     make
@@ -194,14 +221,17 @@ function load_project()
         exit 1
     fi
 
-    source $1/.proj_config/proj_config.sh
-    cd $1
-    project_path=`pwd`
+    project_path=$1
+    cd $project_path
+
+    project_uuid=`print_obj_val 项目UUID`
+    project_name=`print_obj_val 项目名称`
+
     echo "`cat $TMP_PROJECT_INFO | grep install_path`" > $TMP_PROJECT_INFO
-    echo "project_config=$project_path/.proj_config/proj_config.sh" >> $TMP_PROJECT_INFO
-    echo "project_name=$PROJ_PROJECT_NAME" >> $TMP_PROJECT_INFO
-    echo "project_uuid=$PROJ_UUID" >> $TMP_PROJECT_INFO
-    echo "project_path=$PROJ_PROJECT_PATH" >> $TMP_PROJECT_INFO
+    echo "project_config=$project_path/.proj_config/project_config.json" >> $TMP_PROJECT_INFO
+    echo "project_name=$project_name" >> $TMP_PROJECT_INFO
+    echo "project_uuid=$project_uuid" >> $TMP_PROJECT_INFO
+    echo "project_path=$project_path" >> $TMP_PROJECT_INFO
 
     # 记录下加载过的项目
     search_record=`cat $HOME/.project_history | grep $PROJ_UUID`
@@ -214,7 +244,7 @@ function load_project()
     #更新项目路径到临时缓存中
     old_project_path=`cat $project_path/.proj_config/proj_config.sh | grep PROJ_PROJECT_PATH=`
     new_project_path="export PROJ_PROJECT_PATH=$project_path"
-    sed "s#$old_project_path#$new_project_path#g" -i $project_path/.proj_config/proj_config.sh
+    set_obj_val 项目路径 "$project_path"
 
     echo "gen_lib_path=$PROJ_BIN_OUTPUT_DIR/release/lib" >> $TMP_PROJECT_INFO
     echo "gen_bin_path=$PROJ_BIN_OUTPUT_DIR/release/bin" >> $TMP_PROJECT_INFO
@@ -231,7 +261,7 @@ function update_project_info()
     do
         project_path=`echo $project_info | awk -F[=] '{print $2}'`
         project_uuid=`echo $project_info | awk -F[=] '{print $1}'`
-        if [ ! -f $project_path/.proj_config/proj_config.sh ];then
+        if [ ! -f `print_obj_val 项目路径` ];then
             # 获取的项目是个无法加载的项目
             sed "s#$project_info##g" -i $HOME/.project_history
         else
@@ -322,6 +352,9 @@ case $1 in
 
     # 用图形化选择项目
     load_project $proj_path
+    ;;
+"-cfg")
+    config_project_config
     ;;
 "-cr")
     compile_and_install -cr $PROJ_PROJECT_PATH debug

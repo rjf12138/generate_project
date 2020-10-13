@@ -12,13 +12,10 @@ TMP_PROJECT_INFO=$HOME/.current_project.tmp
 CURRENT_PATH=`pwd`
 ##########################################################################
 #加载项目的配置
-project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
-source $project_config
+source ./project_config_manager.sh
+PROJ_PROJECT_PATH=`print_obj_val 项目路径`
 ##########################################################################
 cd $PROJ_PROJECT_PATH
-
-# 导入接口读取函数
-source ./project_config_manager.sh
 
 project_name=`print_obj_val 项目名称` 
 export_file_type=`print_obj_val 当前生成文件类型`
@@ -102,7 +99,7 @@ do
         echo "aux_source_directory(. DIR_LIB_SRCS)" >> ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
 
-        # 根据时间戳设置库名称
+        # 根据时间戳设置临时库名称
         lib_name=`date +%s`
         if [ $src_path == $PROJ_PROJECT_PATH/src && $export_file_type == "exe" ];then
             # src 目录的库名称与项目名称相同，只有这个目录会链接其他库

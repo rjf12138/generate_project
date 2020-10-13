@@ -10,8 +10,8 @@ TMP_PROJECT_INFO=$HOME/.current_project.tmp
 CURRENT_PATH=`pwd`
 ##########################################################################
 #加载项目的配置
-project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
-source $project_config
+source ./project_config_manager.sh
+PROJ_PROJECT_PATH=`print_obj_val 项目路径`
 ##########################################################################
 mkdir -p $PROJ_PROJECT_PATH/.proj_config/record/
 

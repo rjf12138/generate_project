@@ -7,13 +7,15 @@
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
 CURRENT_PATH=`pwd`
-PROJ_PROJECT_PATH=$CURRENT_PATH
+PROJ_PROJECT_PATH=$CURRENT_PATH # 有问题TODO
+TEMPLATES_CONFIG_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/extern/project_config.json
+JSON_PARSER_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/extern/parse_json
 ##########################################################################
 #加载项目的配置
 #project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
 #source $project_config
 ##########################################################################
-COMPILE_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/compile_config.json
+PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
 JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
 cd $PROJ_PROJECT_PATH
 
@@ -22,7 +24,7 @@ cd $PROJ_PROJECT_PATH
 # # 只能打印当前节点以及其下级数组的元素
 function print_obj_val()
 {
-$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+$JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 print $1
 quit
 EOF
@@ -30,7 +32,7 @@ EOF
 
 function print_arr_val()
 {
-$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+$JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 cd $1
 print $2
 quit
@@ -39,7 +41,7 @@ EOF
 
 function print_arr_all()
 {
-$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+$JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 cd $1
 print
 quit
@@ -48,9 +50,7 @@ EOF
 
 function set_obj_val()
 {
-	echo $1 $2 >> ~/FILE.TXT
-
-$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+$JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 set str $1 $2
 write
 quit
@@ -60,12 +60,10 @@ EOF
 # set_arr_all 参数名称 以空格为分割的字符串
 function set_arr_all()
 {
-	echo $1 $2 >> ~/FILE.TXT
-
 	old_val=`print_arr_all $1`
 	for del_val in $old_val
 	do
-$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+$JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 cd $1
 del 0
 write
@@ -75,7 +73,7 @@ EOF
 
 	for param in $2
 	do
-$JSON_PARSE $COMPILE_CONFIG_PATH << EOF
+$JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 cd $1
 add str $param
 write
@@ -84,7 +82,6 @@ EOF
 	done
 }
 
-echo > ~/FILE.TXT
 ###########################################################################
 # exe_file_list=`ls ./main/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
 # src_file_list=`ls ./src/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
@@ -597,6 +594,18 @@ function config_project_config()
 	set_obj_val 项目UUID "$project_uuid"
 }
 
-config_project_config
+# init_project_config project_path
+function init_project_config()
+{
+	cd $PROJ_PROJECT_PATH
+	cp $TEMPLATES_CONFIG_PATH $PROJECT_CONFIG_PATH
+	cp $JSON_PARSER_PATH $JSON_PARSE
+	chmod u+x $JSON_PARSE
 
-exit 0
+	project_uuid=`uuidgen`
+	set_obj_val 项目UUID "$project_uuid"
+
+	set_obj_val 项目路径 "$1"
+}
+
+# config_project_config

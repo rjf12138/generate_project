@@ -7,8 +7,9 @@ INSTALL_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'
 EXTERN_RESOURSE_PATH="`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/script/extern"
 CURRENT_PATH=`pwd`
 ################################################################
-pwd
 source $INSTALL_PATH/project_config_manager.sh
+
+cd $CURRENT_PATH
 
 #基础的工具函数
 function help_info() 
@@ -93,13 +94,22 @@ function generate_project()
     cp -rf $EXTERN_RESOURSE_PATH/basic_head.h $PROJECT_PATH/inc/
     cp -rf $EXTERN_RESOURSE_PATH/project_config.json $PROJECT_PATH/.proj_config/
     cp -rf $EXTERN_RESOURSE_PATH/exbin/parse_json $PROJECT_PATH/.proj_config/
-    echo $PROJECT_PATH/.proj_config/parse_json
     chmod u+x $PROJECT_PATH/.proj_config/parse_json
+
+    # 生成项目uuid
+    project_uuid=`uuidgen`
+    echo $PROJECT_PATH" "$PROJECT_NAME
+    
+    # 加载项目信息到配置中
+    echo "`cat $TMP_PROJECT_INFO | grep install_path`" > $TMP_PROJECT_INFO
+    echo "project_config=$PROJECT_PATH/.proj_config/project_config.json" >> $TMP_PROJECT_INFO
+    echo "project_name=$PROJECT_NAME" >> $TMP_PROJECT_INFO
+    echo "project_uuid=$project_uuid" >> $TMP_PROJECT_INFO
+    echo "project_path=$PROJECT_PATH" >> $TMP_PROJECT_INFO
 
     # 初始化配置文件
     set_obj_val 项目名称 "$PROJECT_PATH"
     set_obj_val 项目名称 "$PROJECT_NAME"
-    project_uuid=`uuidgen`
     set_obj_val 项目UUID "$project_uuid"
 
     # 初始化git
@@ -215,7 +225,7 @@ function load_project()
         exit 1
     fi
 
-    if [ ! -f $1/.proj_config/proj_config.sh ]
+    if [ ! -f $1/.proj_config/project_config.json ]
     then
         echo "Read Project Failed!"
         exit 1
@@ -224,30 +234,30 @@ function load_project()
     project_path=$1
     cd $project_path
 
-    project_uuid=`print_obj_val 项目UUID`
-    project_name=`print_obj_val 项目名称`
-
     echo "`cat $TMP_PROJECT_INFO | grep install_path`" > $TMP_PROJECT_INFO
-    echo "project_config=$project_path/.proj_config/project_config.json" >> $TMP_PROJECT_INFO
-    echo "project_name=$project_name" >> $TMP_PROJECT_INFO
-    echo "project_uuid=$project_uuid" >> $TMP_PROJECT_INFO
     echo "project_path=$project_path" >> $TMP_PROJECT_INFO
 
-    # 记录下加载过的项目
-    search_record=`cat $HOME/.project_history | grep $PROJ_UUID`
+    # 加载当前项目信息到 $HOME/.current_project.tmp 中
+    project_uuid=`print_obj_val 项目UUID`
+    project_name=`print_obj_val 项目名称`
+    echo "project_config=$project_path/.proj_config/project_config.json" >> $TMP_PROJECT_INFO
+
+    echo "project_name=$project_name" >> $TMP_PROJECT_INFO
+    echo "project_uuid=$project_uuid" >> $TMP_PROJECT_INFO
+
+    # 记录加载过的项目
+    search_record=`cat $HOME/.project_history | grep $project_uuid`
     if [ -z "$search_record" ];then
-        echo "$PROJ_UUID=$project_path" >> $HOME/.project_history
+        echo "$project_uuid=$project_path" >> $HOME/.project_history
     else
-        sed "s#$search_record#$PROJ_UUID=$project_path#g" -i $HOME/.project_history
+        sed "s#$search_record#$project_uuid=$project_path#g" -i $HOME/.project_history
     fi
 
     #更新项目路径到临时缓存中
-    old_project_path=`cat $project_path/.proj_config/proj_config.sh | grep PROJ_PROJECT_PATH=`
-    new_project_path="export PROJ_PROJECT_PATH=$project_path"
     set_obj_val 项目路径 "$project_path"
 
-    echo "gen_lib_path=$PROJ_BIN_OUTPUT_DIR/release/lib" >> $TMP_PROJECT_INFO
-    echo "gen_bin_path=$PROJ_BIN_OUTPUT_DIR/release/bin" >> $TMP_PROJECT_INFO
+    echo "gen_lib_path=$project_path/output/release/lib" >> $TMP_PROJECT_INFO
+    echo "gen_bin_path=$project_path/output/release/bin" >> $TMP_PROJECT_INFO
 
     # 用vscode打开项目路径
     code -r $project_path
@@ -265,10 +275,12 @@ function update_project_info()
             # 获取的项目是个无法加载的项目
             sed "s#$project_info##g" -i $HOME/.project_history
         else
-            curr_project_uuid=`cat $project_path/.proj_config/proj_config.sh \
-                                | grep PROJ_UUID= | awk -F[=] '{print $2}'`
+            # 有问题 TODO 要先获取项目路径
+            curr_project_uuid=`print_obj_val 项目UUID`
             # 比对项目的uuid与记录中的uuid是否一致
-            if [ $project_uuid != $curr_project_uuid ];then
+            echo $curr_project_uuid
+            echo $project_uuid
+            if [ "$project_uuid" != "$curr_project_uuid" ];then
                 sed "s#$project_info##g" -i $HOME/.project_history
             fi 
         fi
@@ -398,10 +410,12 @@ case $1 in
     cat $TMP_PROJECT_INFO
     ;;
 "-t")
+echo "copy start"
     project_path=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
     cp $EXTERN_RESOURSE_PATH/test_code/*.cc $project_path/src/
     cp $EXTERN_RESOURSE_PATH/test_code/*.h $project_path/inc/
     mv $project_path/src/main.cc $project_path/main/
+echo "copy end"
     ;;
 "-dr")
     write_project_daily_record.sh

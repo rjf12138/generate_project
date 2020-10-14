@@ -6,24 +6,17 @@
 #########################################################
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
-CURRENT_PATH=`pwd`
-PROJ_PROJECT_PATH=$CURRENT_PATH # 有问题TODO
-TEMPLATES_CONFIG_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/extern/project_config.json
-JSON_PARSER_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/extern/parse_json
-##########################################################################
-#加载项目的配置
-#project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
-#source $project_config
-##########################################################################
-PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
-JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
-cd $PROJ_PROJECT_PATH
-
+# 使用下面函数前要确保.current_project.tmp中要有当前项目的路径
 ###########################################################################
 # JSON 解析封装函数
 # # 只能打印当前节点以及其下级数组的元素
 function print_obj_val()
 {
+PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
+PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
+JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+cd $PROJ_PROJECT_PATH
+
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 print $1
 quit
@@ -32,6 +25,11 @@ EOF
 
 function print_arr_val()
 {
+PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
+PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
+JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+cd $PROJ_PROJECT_PATH
+
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 cd $1
 print $2
@@ -41,6 +39,11 @@ EOF
 
 function print_arr_all()
 {
+PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
+PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
+JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+cd $PROJ_PROJECT_PATH
+
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 cd $1
 print
@@ -50,6 +53,11 @@ EOF
 
 function set_obj_val()
 {
+PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
+PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
+JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+cd $PROJ_PROJECT_PATH
+
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 set str $1 $2
 write
@@ -60,6 +68,11 @@ EOF
 # set_arr_all 参数名称 以空格为分割的字符串
 function set_arr_all()
 {
+PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
+PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
+JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+cd $PROJ_PROJECT_PATH
+
 	old_val=`print_arr_all $1`
 	for del_val in $old_val
 	do

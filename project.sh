@@ -4,6 +4,7 @@
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
 INSTALL_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`
+PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
 EXTERN_RESOURSE_PATH="`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`/script/extern"
 CURRENT_PATH=`pwd`
 ################################################################
@@ -271,11 +272,11 @@ function update_project_info()
     do
         project_path=`echo $project_info | awk -F[=] '{print $2}'`
         project_uuid=`echo $project_info | awk -F[=] '{print $1}'`
-        if [ ! -f `print_obj_val 项目路径` ];then
-            # 获取的项目是个无法加载的项目
+        set_project_path_to_tmp_config_file $project_path
+        if [ ! -d `print_obj_val 项目路径` ];then
+            # 获取的项目是个无法加载的项目，清除该条历史记录
             sed "s#$project_info##g" -i $HOME/.project_history
         else
-            # 有问题 TODO 要先获取项目路径
             curr_project_uuid=`print_obj_val 项目UUID`
             # 比对项目的uuid与记录中的uuid是否一致
             echo $curr_project_uuid
@@ -293,13 +294,9 @@ then
 fi
 
 ##########################################################################
-#加载项目的配置
-project_config=`cat $TMP_PROJECT_INFO 2> /dev/null | grep project_config | awk -F[=] '{print $2}' | tr -s '\n'`
-if [ ! -z $project_config ] && [ -f $project_config ];then
-    source $project_config
-fi
 
 # 当项目未加载时， 执行cmd_lists中的命令会报错
+project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
 if [ -z $project_config ];then
     cmd_lists=("-r" "-rr" "-c" "-cr" "-e" "-rg" "-dr" "-t" "-push")
     for cmd in ${cmd_lists[@]}

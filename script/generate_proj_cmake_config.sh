@@ -9,26 +9,27 @@
 #########################################################
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
+INSTALL_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`
 CURRENT_PATH=`pwd`
 ##########################################################################
 #加载项目的配置
-source ./project_config_manager.sh
+source $INSTALL_PATH/project_config_manager.sh
 PROJ_PROJECT_PATH=`print_obj_val 项目路径`
 ##########################################################################
 cd $PROJ_PROJECT_PATH
-
+echo "start"
 project_name=`print_obj_val 项目名称` 
 export_file_type=`print_obj_val 当前生成文件类型`
 compile_method=`print_obj_val 编译方式`
 compiler=`print_obj_val 当前编译器`
 
-if [ compile_method == "release" ]
+if [ "$compile_method" == "release" ]
 then
-    static_libs=`print_arr_vals release静态库列表`
+    static_libs=`print_arr_all release静态库列表`
     compile_option=`print_obj_val release版编译选项`
-elif [ compile_method == "debug" ]
+elif [ "$compile_method" == "debug" ]
 then
-    static_libs=`print_arr_vals debug静态库列表`
+    static_libs=`print_arr_all debug静态库列表`
     compile_option=`print_obj_val debug版编译选项`
 else
     echo "Unknown option: $compile_option"
@@ -36,8 +37,8 @@ else
 fi
 
 program_entry_file=`print_obj_val 当前程序入口文件`
-head_dirs=`print_arr_vals 头文件目录列表`
-src_dirs=`print_arr_vals 源文件目录列表`
+head_dirs=`print_arr_all 头文件目录列表`
+src_dirs=`print_arr_all 源文件目录列表`
 
 # 创建主cmake文件
 main_cmakelists_path='./CMakeLists.txt'
@@ -172,5 +173,5 @@ case $export_file_type in
 *)
     echo "Not support"
 esac
-
+echo "end"
 exit 0

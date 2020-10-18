@@ -8,6 +8,24 @@
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
 # 使用下面函数前要确保.current_project.tmp中要有当前项目的路径
 ###########################################################################
+# 设置项目路径到 .current_project.tmp 中
+function set_project_path_to_tmp_config_file()
+{
+	if [ $# != 1 ];then
+		return 1
+	fi
+
+	# 检查配置文件中是否有项目路径这个选项
+	project_path=`cat $TMP_PROJECT_INFO | grep project_path`
+	key=`echo $project_path | awk -F[=] '{print $1}'`
+
+	if [ "$key" != "project_path" ];then
+		echo "project_path=$1" >> $TMP_PROJECT_INFO
+	else
+		sed "s#project_path=$1#$project_path#g" -i $TMP_PROJECT_INFO
+	fi
+}
+
 # JSON 解析封装函数
 # # 只能打印当前节点以及其下级数组的元素
 function print_obj_val()

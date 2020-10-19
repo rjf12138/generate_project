@@ -17,7 +17,7 @@ source $INSTALL_PATH/project_config_manager.sh
 PROJ_PROJECT_PATH=`print_obj_val 项目路径`
 ##########################################################################
 cd $PROJ_PROJECT_PATH
-echo "start"
+
 project_name=`print_obj_val 项目名称` 
 export_file_type=`print_obj_val 当前生成文件类型`
 compile_method=`print_obj_val 编译方式`
@@ -36,6 +36,7 @@ else
     exit 1
 fi
 
+static_lib_dirs=`print_arr_all 静态库目录列表`
 program_entry_file=`print_obj_val 当前程序入口文件`
 head_dirs=`print_arr_all 头文件目录列表`
 src_dirs=`print_arr_all 源文件目录列表`
@@ -48,7 +49,7 @@ echo "cmake_minimum_required(VERSION 3.10)" >> $main_cmakelists_path
 echo "" >> $main_cmakelists_path
 
 #添加编译选项
-compile_option=`echo $compile_option > sed 's/#//g'` 
+compile_option=`echo $compile_option | sed 's/#//g'` 
 echo "add_compile_options($compile_option)" >> $main_cmakelists_path
 echo "" >> $main_cmakelists_path
 
@@ -60,9 +61,9 @@ done
 echo "" >> $main_cmakelists_path
 
 #添加链接库目录
-for head_dir in $head_dirs
+for static_lib_dir in $static_lib_dirs
 do
-    echo "link_directories($head_dir)" >> $main_cmakelists_path
+    echo "link_directories($static_lib_dir)" >> $main_cmakelists_path
 done
 echo "" >> $main_cmakelists_path
 
@@ -80,15 +81,17 @@ do
     touch ./CMakeLists.txt
     echo "" > ./CMakeLists.txt
     # 判断是不是主函数目录
+    echo $src_dir
+    echo $program_entry_file
     is_main_dir=`echo $src_dir | grep main | tr -d ['\n']`
     is_entry_file=`ls | grep $program_entry_file | tr -d ['\n']`
     # 判断是不是项目下的 src 目录
     src_path=`pwd`
-    if [ $src_path == $PROJ_PROJECT_PATH/main ];then
+    if [ "$src_path" == "$PROJ_PROJECT_PATH/main" ];then
         # 记录下主函数所在目录
         main_dir=$src_dir
     else
-        is_empty_dir=`ls *.cc *.cpp | tr -d ['\n']`
+        is_empty_dir=`ls | grep -E '.cc|.cpp' |tr -d ['\n']`
         if [ -z $is_empty_dir ];then
             continue
         fi
@@ -102,18 +105,21 @@ do
 
         # 根据时间戳设置临时库名称
         lib_name=`date +%s`
-        if [ $src_path == $PROJ_PROJECT_PATH/src && $export_file_type == "exe" ];then
+        if [ "$src_path" == "$PROJ_PROJECT_PATH/src" ] && [ "$export_file_type" == "exe" ];then
             # src 目录的库名称与项目名称相同，只有这个目录会链接其他库
             lib_name=$project_name
             for link_lib in $static_libs
             do
-                echo "target_link_libraries($lib_name -l$link_lib)" >> ./CMakeLists.txt
+                echo "target_link_libraries($lib_name $link_lib)" >> ./CMakeLists.txt
             done
-        else if [ $src_path == $PROJ_PROJECT_PATH/src ];then
+
+            echo "add_library ($lib_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
+            echo "" >> ./CMakeLists.txt
+        elif [ $src_path == $PROJ_PROJECT_PATH/src ];then
             # 生成非可执行文件，src库cmakelists.txt之后在生成
             continue
         else
-            echo "add_library ($lib_name ${DIR_LIB_SRCS})" >> ./CMakeLists.txt
+            echo "add_library ($lib_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
             echo "" >> ./CMakeLists.txt
         fi
 
@@ -136,18 +142,19 @@ case $export_file_type in
     echo "set(LIBRARY_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/bin)" >> ./CMakeLists.txt
     echo "" >> ./CMakeLists.txt
 
+    exe_name=`echo $program_entry_file | awk -F[.] '{print $1}'`
     for lib in $gen_lib_lists
     do
-        echo "target_link_libraries($project_name -l$lib)" >> ./CMakeLists.txt
+        echo "target_link_libraries($exe_name $lib)" >> ./CMakeLists.txt
     done
     echo "" >> ./CMakeLists.txt
 
-    echo "add_executable($project_name $program_entry_file)" >> ./CMakeLists.txt
+    echo "add_executable($exe_name $program_entry_file)" >> ./CMakeLists.txt
     cd $PROJ_PROJECT_PATH
     ;;
 "static_lib")
     cd $PROJ_PROJECT_PATH/src
-    is_empty_dir=`ls *.cc *.cpp | tr -d ['\n']`
+    is_empty_dir=`ls | grep -E '.cc|.cpp' |tr -d ['\n']`
     if [ -z $is_empty_dir ];then
         echo "$src_path is empty"
         exit 1
@@ -165,7 +172,7 @@ case $export_file_type in
     done
     echo "" >> ./CMakeLists.txt
 
-    echo "add_library ($project_name ${DIR_LIB_SRCS})" >> ./CMakeLists.txt
+    echo "add_library ($project_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
     echo "" >> ./CMakeLists.txt
 
     cd $PROJ_PROJECT_PATH

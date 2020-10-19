@@ -114,6 +114,17 @@ EOF
 }
 
 ###########################################################################
+# 添加项目特有配置
+function load_project_info()
+{
+	# 加载程序入口文件列表
+	cd $PROJ_PROJECT_PATH/main
+
+	program_entry_file_list=`ls | grep -E '.cc|.cpp' | awk -F['\n'] '{ORS=" ";print $1}'`
+    set_arr_all 程序入口文件列表 "$program_entry_file_list"
+}
+
+###########################################################################
 # exe_file_list=`ls ./main/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
 # src_file_list=`ls ./src/ | tr -s \" \" | awk '{ORS=\" \"; print $1}'`
 # static_lib_file_list=`cd ./lib/$compile_method/; ls *.a | tr -s " " | awk '{ORS=" "; print $1}'`
@@ -121,6 +132,8 @@ EOF
 
 function config_project_config()
 {
+	load_project_info
+
 	project_option=("项目名称" "项目路径" "当前编译器" "可选编译器列表" "编译方式" "debug版编译选项"
 					"release版编译选项" "当前生成文件类型" "可生成文件类型" "当前程序入口文件" "程序入口文件列表"
 					"头文件目录列表" "静态库目录列表" "源文件目录列表" "项目UUID")
@@ -151,7 +164,7 @@ function config_project_config()
 								">静态库目录列表" "查看" ">静态库列表" "查看" ">源文件目录列表" "查看" "*退出并保存" "" "*退出不保存" "")
 
 		project_config_num=`expr ${#project_config_info[*]} / 2`
-		OPTION=$(whiptail --title "项目配置" --menu "项目配置" 24 55 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
+		OPTION=$(whiptail --title "项目配置" --menu "项目配置" 25 82 $project_config_num "${project_config_info[@]}"  3>&1 1>&2 2>&3)
 
 		exitstatus=$?
 		if [ $exitstatus != 0 ]; then
@@ -503,14 +516,12 @@ function config_project_config()
 				done
 				;;
 			">当前程序入口文件: ")
-				echo "$program_entry_file_list"
 				unset program_entry_files #清空数组元素，防止下次循环回来数组元素添加出现叠加现象
 				for entry_file in $program_entry_file_list
 				do
 					program_entry_files_num=`expr ${#program_entry_files[*]} / 2 + 1`
 					program_entry_files[${#program_entry_files[*]}]=$program_entry_files_num
 					program_entry_files[${#program_entry_files[*]}]=$entry_file
-					echo "${program_entry_files[@]}"
 				done
 
 				program_entry_files_num=`expr ${#program_entry_files[*]} / 2`
@@ -623,20 +634,6 @@ function config_project_config()
 	set_arr_all debug静态库列表 "$debug_static_lib_list"
 	set_arr_all 源文件目录列表 "$src_file_dir_list"
 	set_obj_val 项目UUID "$project_uuid"
-}
-
-# init_project_config project_path
-function init_project_config()
-{
-	cd $PROJ_PROJECT_PATH
-	cp $TEMPLATES_CONFIG_PATH $PROJECT_CONFIG_PATH
-	cp $JSON_PARSER_PATH $JSON_PARSE
-	chmod u+x $JSON_PARSE
-
-	project_uuid=`uuidgen`
-	set_obj_val 项目UUID "$project_uuid"
-
-	set_obj_val 项目路径 "$1"
 }
 
 # config_project_config

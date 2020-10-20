@@ -1,16 +1,18 @@
 #!/bin/bash
 
-#########################################################
+################################################################
 # 全局变量
 TMP_PROJECT_INFO=$HOME/.current_project.tmp
+INSTALL_PATH=`cat $TMP_PROJECT_INFO | grep install_path | awk -F[=] '{print $2}'`
+PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
+BIN_PATH=`cat $TMP_PROJECT_INFO | grep gen_bin_path | awk -F[=] '{print $2}'`
 CURRENT_PATH=`pwd`
-##########################################################################
-#加载项目的配置
-source ./project_config_manager.sh
-PROJ_PROJECT_PATH=`print_obj_val 项目路径`
-##########################################################################
-
+################################################################
+source $INSTALL_PATH/project_config_manager.sh
+PROJ_EXEC_ARGS=`print_obj_val 程序参数 | sed 's/#//g'`
+EXE_FILE_NAME=`print_obj_val 当前程序入口文件 | awk -F[.] '{print $1}'`
 cd $PROJ_PROJECT_PATH/.vscode/
+##########################################################################
 
 echo "{"                                                                > tasks.json
 echo "    // See https://go.microsoft.com/fwlink/?LinkId=733558"        >> tasks.json
@@ -19,9 +21,9 @@ echo "        \"tasks\": ["                                             >> tasks
 echo "            {"                                                    >> tasks.json
 echo "                \"type\": \"shell\","                             >> tasks.json
 echo "                \"label\": \"compile script\","                   >> tasks.json
-echo "                \"command\": \"$COMPILE_SCRIPT_PATH\","           >> tasks.json
+echo "                \"command\": \"project\","                        >> tasks.json
 echo "                \"args\": ["                                      >> tasks.json
-echo "                    \"$COMPILE_SCRIPT_ARGS\""                     >> tasks.json
+echo "                    \"-r\""                                       >> tasks.json
 echo "                ],"                                               >> tasks.json
 echo "                \"options\": {"                                   >> tasks.json
 echo "                    \"cwd\": \"$PROJ_PROJECT_PATH\""              >> tasks.json
@@ -46,7 +48,7 @@ echo "        {"                                                        >> launc
 echo "            \"name\": \"gdb_debug\","                             >> launch.json
 echo "            \"type\": \"cppdbg\","                                >> launch.json
 echo "            \"request\": \"launch\","                             >> launch.json
-echo "            \"program\": \"$PROJ_BIN_OUTPUT_DIR/debug/bin/$PROJ_EXEC_NAME\"," >> launch.json
+echo "            \"program\": \"$BIN_PATH/$EXE_FILE_NAME\","           >> launch.json
 echo "            \"args\": [\"$PROJ_EXEC_ARGS\"],"                     >> launch.json
 echo "            \"stopAtEntry\": false,"                              >> launch.json
 echo "            \"cwd\": \"$PROJ_PROJECT_PATH\","                     >> launch.json

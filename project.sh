@@ -22,6 +22,7 @@ function help_info()
     echo "-cr                   --clean and rebuild project."
     echo "-r                    --rebuild without cleanning."
     echo "-rr                   --release version(non debug)"
+    echo "-run                  --run program"
     echo "-c                    --clean all."
     echo "-e                    --enter project exec file dir."
     echo "-w                    --open new gnome_terminal."
@@ -202,13 +203,13 @@ function compile_and_install()
     if [ $3 == "release" ];then
         lib_path=`cat $TMP_PROJECT_INFO | grep gen_lib_path`
         bin_path=`cat $TMP_PROJECT_INFO | grep gen_bin_path`
-        sed "s#$lib_path#gen_lib_path=$PROJ_BIN_OUTPUT_DIR/release/lib#g" -i $TMP_PROJECT_INFO
-        sed "s#$bin_path#gen_bin_path=$PROJ_BIN_OUTPUT_DIR/release/bin#g" -i $TMP_PROJECT_INFO
+        sed "s#$lib_path#gen_lib_path=$PROJ_PROJECT_PATH/output/release/lib#g" -i $TMP_PROJECT_INFO
+        sed "s#$bin_path#gen_bin_path=$PROJ_PROJECT_PATH/output/release/bin#g" -i $TMP_PROJECT_INFO
     else
         lib_path=`cat $TMP_PROJECT_INFO | grep gen_lib_path`
         bin_path=`cat $TMP_PROJECT_INFO | grep gen_bin_path`
-        sed "s#$lib_path#gen_lib_path=$PROJ_BIN_OUTPUT_DIR/debug/lib#g" -i $TMP_PROJECT_INFO
-        sed "s#$bin_path#gen_bin_path=$PROJ_BIN_OUTPUT_DIR/debug/bin#g" -i $TMP_PROJECT_INFO
+        sed "s#$lib_path#gen_lib_path=$PROJ_PROJECT_PATH/output/debug/lib#g" -i $TMP_PROJECT_INFO
+        sed "s#$bin_path#gen_bin_path=$PROJ_PROJECT_PATH/output/debug/bin#g" -i $TMP_PROJECT_INFO
     fi
 }
 
@@ -298,7 +299,7 @@ fi
 # 当项目未加载时， 执行cmd_lists中的命令会报错
 project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
 if [ -z $project_config ];then
-    cmd_lists=("-r" "-rr" "-c" "-cr" "-e" "-rg" "-dr" "-t" "-push")
+    cmd_lists=("-r" "-rr" "-c" "-cr" "-e" "-rg" "-dr" "-t" "-push" "-run")
     for cmd in ${cmd_lists[@]}
     do
         if [ $1 == $cmd ];then
@@ -366,15 +367,27 @@ case $1 in
     config_project_config
     ;;
 "-cr")
-    compile_and_install -cr $PROJ_PROJECT_PATH debug
+    compile_method=`print_obj_val 编译方式`
+    compile_and_install -cr $PROJ_PROJECT_PATH $compile_method
     generate_vscode_debug_config.sh
     ;;
 "-r")
-    compile_and_install -r $PROJ_PROJECT_PATH debug
+    compile_method=`print_obj_val 编译方式`
+    compile_and_install -r $PROJ_PROJECT_PATH $compile_method
     generate_vscode_debug_config.sh
     ;;
-"-rr")
-    compile_and_install -cr $PROJ_PROJECT_PATH release
+"-run")
+    bin_path=`cat $TMP_PROJECT_INFO | grep gen_bin_path | awk -F[=] '{print $2}'`
+    gen_file_type=`print_obj_val 当前生成文件类型`
+    exe_file_name=`print_obj_val 当前程序入口文件 | awk -F[.] '{print $1}'`
+    parm=`print_obj_val 程序参数 | sed 's/#//g'`
+    if [ "$gen_file_type" == "exe" ];then
+        cd $bin_path
+        ./$exe_file_name $parm
+    else
+        echo "Not execulate file"
+    fi
+    cd $PROJ_PROJECT_PATH
     ;;
 "-c")
     clean_project

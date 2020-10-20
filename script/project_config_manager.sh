@@ -142,6 +142,7 @@ function config_project_config()
 	current_compiler=`print_obj_val 当前编译器`
 	compiler_list=`print_arr_all 可选编译器列表`
 	compile_method=`print_obj_val 编译方式`
+	program_run_param=`print_obj_val 程序参数`
 	debug_compile_option=`print_obj_val debug版编译选项`
 	release_compile_option=`print_obj_val release版编译选项`
 	current_generate_file_type=`print_obj_val 当前生成文件类型`
@@ -158,7 +159,7 @@ function config_project_config()
 	do
 		# whiptail 的值不能以 ‘-’开始
 		project_config_info=("*项目名称: " "$project_name" "*项目UUID: " "$project_uuid" "*项目路径: " "$project_path" 
-								">当前编译器: " "$current_compiler" ">编译方式: " "$compile_method" ">debug编译选项: " "$debug_compile_option"
+								">当前编译器: " "$current_compiler" ">编译方式: " "$compile_method" ">程序参数: " "$program_run_param" ">debug编译选项: " "$debug_compile_option"
 								">release编译选项: " "$release_compile_option" ">当前生成文件类型: " "$current_generate_file_type"
 								">当前程序入口文件: "  "$current_program_entry_file" ">头文件目录列表" "查看"
 								">静态库目录列表" "查看" ">静态库列表" "查看" ">源文件目录列表" "查看" "*退出并保存" "" "*退出不保存" "")
@@ -615,6 +616,16 @@ function config_project_config()
 				fi
 				release_compile_option=$compile_option
 			;;
+			">程序参数: ")
+				option=$(whiptail --title "程序参数" --inputbox "注意：不要去掉最前面的'#', 参数中不要有'#'符号" 10 60 "$program_run_param" 3>&1 1>&2 2>&3)
+
+				exitstatus=$?
+				if [ $exitstatus != 0 ]; then
+					echo "You chose Cancel."
+					continue
+				fi
+				program_run_param=$option
+			;;
 		esac
 	done
 
@@ -634,6 +645,7 @@ function config_project_config()
 	set_arr_all debug静态库列表 "$debug_static_lib_list"
 	set_arr_all 源文件目录列表 "$src_file_dir_list"
 	set_obj_val 项目UUID "$project_uuid"
+	set_obj_val 程序参数 "$program_run_param"
 }
 
 # config_project_config

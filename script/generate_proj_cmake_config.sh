@@ -71,12 +71,13 @@ echo "" >> $main_cmakelists_path
 gen_lib_lists=""
 for src_dir in $src_dirs
 do
-    echo "add_subdirectory($src_dir)" >> $main_cmakelists_path
-    cd $src_dir
+    cd $PROJ_PROJECT_PATH/$src_dir
     if [ $? != 0 ];then
         echo "Can't enter into $src_dir"
         continue
     fi
+    echo "add_subdirectory($src_dir)" >> $main_cmakelists_path
+
     # 添加子目录cmakelists.txt文件
     touch ./CMakeLists.txt
     echo "" > ./CMakeLists.txt
@@ -96,7 +97,7 @@ do
             continue
         fi
         
-        echo "project($project_name)" >> ./CMakeLists.txt
+        echo "project($project_name)" > ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
         echo "set(LIBRARY_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/lib)" >> ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
@@ -106,16 +107,16 @@ do
         # 根据时间戳设置临时库名称
         lib_name=`date +%s`
         if [ "$src_path" == "$PROJ_PROJECT_PATH/src" ] && [ "$export_file_type" == "exe" ];then
-            # src 目录的库名称与项目名称相同，只有这个目录会链接其他库
             lib_name=$project_name
-            for link_lib in $static_libs
-            do
-                echo "target_link_libraries($lib_name $link_lib)" >> ./CMakeLists.txt
-            done
-
             echo "add_library ($lib_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
             echo "" >> ./CMakeLists.txt
-        elif [ $src_path == $PROJ_PROJECT_PATH/src ];then
+
+            # src 目录的库名称与项目名称相同，只有这个目录会链接其他库
+            for link_lib in $static_libs
+            do
+                echo "target_link_libraries($lib_name -l$link_lib)" >> ./CMakeLists.txt
+            done
+        elif [ "$src_path" == "$PROJ_PROJECT_PATH/src" ];then
             # 生成非可执行文件，src库cmakelists.txt之后在生成
             continue
         else
@@ -125,9 +126,9 @@ do
 
         gen_lib_lists=$gen_lib_lists" "$lib_name
     fi
-    cd $PROJ_PROJECT_PATH
 done
 
+cd $PROJ_PROJECT_PATH
 case $export_file_type in
 "exe")
     if [ ! -f $PROJ_PROJECT_PATH/main/$program_entry_file ];then
@@ -139,17 +140,17 @@ case $export_file_type in
     echo "project($project_name)" >> ./CMakeLists.txt
     echo "" >> ./CMakeLists.txt
 
-    echo "set(LIBRARY_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/bin)" >> ./CMakeLists.txt
+    echo "set(EXECUTABLE_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/bin)" >> ./CMakeLists.txt
     echo "" >> ./CMakeLists.txt
 
     exe_name=`echo $program_entry_file | awk -F[.] '{print $1}'`
+    echo "add_executable($exe_name $program_entry_file)" >> ./CMakeLists.txt
     for lib in $gen_lib_lists
     do
-        echo "target_link_libraries($exe_name $lib)" >> ./CMakeLists.txt
+        echo "target_link_libraries($exe_name -l$lib)" >> ./CMakeLists.txt
     done
     echo "" >> ./CMakeLists.txt
 
-    echo "add_executable($exe_name $program_entry_file)" >> ./CMakeLists.txt
     cd $PROJ_PROJECT_PATH
     ;;
 "static_lib")
@@ -166,13 +167,13 @@ case $export_file_type in
     echo "set(LIBRARY_OUTPUT_PATH $PROJ_PROJECT_PATH/output/$compile_method/lib)" >> ./CMakeLists.txt
     echo "" >> ./CMakeLists.txt
 
+    echo "add_library ($project_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
+    echo "" >> ./CMakeLists.txt
+
     for lib in $gen_lib_lists
     do
         echo "target_link_libraries($project_name -l$lib)" >> ./CMakeLists.txt
     done
-    echo "" >> ./CMakeLists.txt
-
-    echo "add_library ($project_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
     echo "" >> ./CMakeLists.txt
 
     cd $PROJ_PROJECT_PATH
@@ -180,5 +181,5 @@ case $export_file_type in
 *)
     echo "Not support"
 esac
-echo "end"
+
 exit 0

@@ -106,7 +106,11 @@ do
         echo "" >> ./CMakeLists.txt
 
         # 根据时间戳设置临时库名称
-        lib_name=`date +%s`
+        dirs=`echo $src_dir | sed 's#/# #g' | awk '{gsub(/^\s+|\s+$/, "");print}'`
+        for dir in $dirs
+        do
+            lib_name=$dir
+        done
         
         echo "add_library($lib_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
@@ -138,7 +142,7 @@ if [ ! -z $is_empty_dir ];then
     echo "" >> ./CMakeLists.txt
     gen_lib_lists=$project_name
 
-    echo "add_subdirectory($src_dir)" >> $main_cmakelists_path
+    echo "add_subdirectory(./src/)" >> $main_cmakelists_path
 fi
 
 
@@ -165,7 +169,7 @@ case $export_file_type in
         echo "target_link_libraries($exe_name -l$lib)" >> ./CMakeLists.txt
     done
     echo "" >> ./CMakeLists.txt
-    echo "add_subdirectory($src_dir)" >> $main_cmakelists_path
+    echo "add_subdirectory(./main/)" >> $main_cmakelists_path
     
     cd $PROJ_PROJECT_PATH
     ;;

@@ -280,8 +280,6 @@ function update_project_info()
         else
             curr_project_uuid=`print_obj_val 项目UUID`
             # 比对项目的uuid与记录中的uuid是否一致
-            echo $curr_project_uuid
-            echo $project_uuid
             if [ "$project_uuid" != "$curr_project_uuid" ];then
                 sed "s#$project_info##g" -i $HOME/.project_history
             fi 
@@ -420,12 +418,10 @@ case $1 in
     cat $TMP_PROJECT_INFO
     ;;
 "-t")
-echo "copy start"
     project_path=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
     cp $EXTERN_RESOURSE_PATH/test_code/*.cc $project_path/src/
     cp $EXTERN_RESOURSE_PATH/test_code/*.h $project_path/inc/
     mv $project_path/src/main.cc $project_path/main/
-echo "copy end"
     ;;
 "-dr")
     write_project_daily_record.sh

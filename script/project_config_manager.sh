@@ -14,7 +14,7 @@ function set_project_path_to_tmp_config_file()
 	if [ $# != 1 ];then
 		return 1
 	fi
-
+	
 	# 检查配置文件中是否有项目路径这个选项
 	project_path=`cat $TMP_PROJECT_INFO | grep project_path`
 	key=`echo $project_path | awk -F[=] '{print $1}'`
@@ -22,7 +22,7 @@ function set_project_path_to_tmp_config_file()
 	if [ "$key" != "project_path" ];then
 		echo "project_path=$1" >> $TMP_PROJECT_INFO
 	else
-		sed "s#project_path=$1#$project_path#g" -i $TMP_PROJECT_INFO
+		sed "s#$project_path#project_path=$1#g" -i $TMP_PROJECT_INFO
 	fi
 }
 
@@ -178,8 +178,7 @@ function config_project_config()
 		elif [ $OPTION == "*退出并保存" ];then
 			break
 		fi
-
-		echo $OPTION" "$exitstatus > ~/FILE.TXT
+		
 		case $OPTION in
 			"*项目名称: "|"*项目UUID: "|"*项目路径: ")
 				continue

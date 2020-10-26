@@ -425,7 +425,6 @@ case $1 in
     ;;
 "-dr")
     write_project_daily_record.sh
-    clear
     ;;
 "-rg")
     cd $PROJ_PROJECT_PATH

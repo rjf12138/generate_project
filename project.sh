@@ -36,6 +36,33 @@ function help_info()
     exit 0
 }
 
+function git_version_control()
+{
+    cd $PROJ_PROJECT_PATH
+
+    while true
+    do
+        OPTION=$(whiptail --title "日志选项" --menu "选择你的操作：" 15 60 4 \
+        "1" "git分支管理" \
+        "2" "历史提交记录" \
+        "3" "退出"  3>&1 1>&2 2>&3)
+        
+        exitstatus=$?
+        if [ $exitstatus != 0 ]; then
+            echo "exit."
+            break
+        fi
+
+        case $OPTION in
+        "1")
+
+            ;;
+        "2")
+            ;;
+        esac
+    done
+}
+
 function enter_bin_directory()
 {
     dir=$1
@@ -443,6 +470,10 @@ case $1 in
     git add -A .
 	git commit -m "`date`"
 	git push -u origin master
+    ;;
+"-branch")
+    cd $PROJ_PROJECT_PATH
+    echo "Not support"
     ;;
 *)
     help_info

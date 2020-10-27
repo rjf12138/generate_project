@@ -16,7 +16,6 @@ mkdir -p $PROJ_PROJECT_PATH/.proj_config/record/daily_record/
 
 while true
 do
-    echo start
     OPTION=$(whiptail --title "日志选项" --menu "选择你的操作：" 15 60 4 \
     "1" "记录项目进度" \
     "2" "记录未来计划" \
@@ -72,14 +71,14 @@ do
         case $OPTION in
             "1")
                 unset records
-                for record in `ls -rt | grep done_record`
+                for record in `ls | grep done_record | sort -r`
                 do
                     records[${#records[*]}]=$record
                 done
             ;;
             "2")
                 unset records
-                for record in `ls -rt | grep todo_record`
+                for record in `ls | grep todo_record | sort -r`
                 do
                     records[${#records[*]}]=$record
                 done

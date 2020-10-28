@@ -283,6 +283,8 @@ function load_project()
     fi
 
     #更新项目路径到临时缓存中
+    cd $project_path
+    project_path=`pwd`
     set_obj_val 项目路径 "$project_path"
 
     echo "gen_lib_path=$project_path/output/release/lib" >> $TMP_PROJECT_INFO

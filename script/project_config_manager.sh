@@ -33,6 +33,12 @@ function print_obj_val()
 PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
 PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
 JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+
+if [ ! -d $PROJ_PROJECT_PATH ]
+then
+	return ;
+fi
+	
 cd $PROJ_PROJECT_PATH
 
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
@@ -46,6 +52,12 @@ function print_arr_val()
 PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
 PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
 JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+
+if [ ! -d $PROJ_PROJECT_PATH ]
+then
+	return ;
+fi
+	
 cd $PROJ_PROJECT_PATH
 
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
@@ -60,6 +72,12 @@ function print_arr_all()
 PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
 PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
 JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+
+if [ ! -d $PROJ_PROJECT_PATH ]
+then
+	return ;
+fi
+	
 cd $PROJ_PROJECT_PATH
 
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
@@ -74,6 +92,12 @@ function set_obj_val()
 PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
 PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
 JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+
+if [ ! -d $PROJ_PROJECT_PATH ]
+then
+	return ;
+fi
+	
 cd $PROJ_PROJECT_PATH
 
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
@@ -89,6 +113,12 @@ function set_arr_all()
 PROJ_PROJECT_PATH=`cat $TMP_PROJECT_INFO | grep project_path | awk -F[=] '{print $2}'`
 PROJECT_CONFIG_PATH=$PROJ_PROJECT_PATH/.proj_config/project_config.json
 JSON_PARSE=$PROJ_PROJECT_PATH/.proj_config/parse_json
+
+if [ ! -d $PROJ_PROJECT_PATH ]
+then
+	return ;
+fi
+	
 cd $PROJ_PROJECT_PATH
 
 	old_val=`print_arr_all $1`

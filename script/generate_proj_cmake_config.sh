@@ -83,16 +83,14 @@ do
     # 添加子目录cmakelists.txt文件
     touch ./CMakeLists.txt
     echo "" > ./CMakeLists.txt
-    # 判断是不是主函数目录
-    
-    is_main_dir=`echo $src_dir | grep main | tr -d ['\n']`
-    is_entry_file=`ls | grep $program_entry_file | tr -d ['\n']`
 
     # 判断是不是项目下的 src 目录
     src_path=`pwd`
     if [ "$src_path" == "$PROJ_PROJECT_PATH/main" ] || [ "$src_path" == "$PROJ_PROJECT_PATH/src" ];then
         continue
     else
+        echo $src_path
+        echo $PROJ_PROJECT_PATH/main
         is_empty_dir=`ls | grep -E '.cc|.cpp' |tr -d ['\n']`
         if [ -z $is_empty_dir ];then
             continue
@@ -106,11 +104,7 @@ do
         echo "" >> ./CMakeLists.txt
 
         # 根据时间戳设置临时库名称
-        dirs=`echo $src_dir | sed 's#/# #g' | awk '{gsub(/^\s+|\s+$/, "");print}'`
-        for dir in $dirs
-        do
-            lib_name=$dir
-        done
+        lib_name=`date +%s`
         
         echo "add_library($lib_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
@@ -169,7 +163,7 @@ case $export_file_type in
         echo "target_link_libraries($exe_name -l$lib)" >> ./CMakeLists.txt
     done
     echo "" >> ./CMakeLists.txt
-    echo "add_subdirectory(./main/)" >> $main_cmakelists_path
+    echo "add_subdirectory(./main)" >> $main_cmakelists_path
     
     cd $PROJ_PROJECT_PATH
     ;;

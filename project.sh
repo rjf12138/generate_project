@@ -326,7 +326,7 @@ fi
 # 当项目未加载时， 执行cmd_lists中的命令会报错
 project_config=`cat $TMP_PROJECT_INFO | grep project_config | awk -F[=] '{print $2}'`
 if [ -z $project_config ];then
-    cmd_lists=("-r" "-rr" "-c" "-cr" "-e" "-rg" "-dr" "-t" "-push" "-run")
+    cmd_lists=("-r" "-rr" "-c" "-cr" "-e" "-rg" "-dr" "-t" "-push" "-run" "-cfg")
     for cmd in ${cmd_lists[@]}
     do
         if [ $1 == $cmd ];then

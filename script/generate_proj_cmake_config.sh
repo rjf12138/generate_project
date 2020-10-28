@@ -163,7 +163,7 @@ case $export_file_type in
         echo "target_link_libraries($exe_name -l$lib)" >> ./CMakeLists.txt
     done
     echo "" >> ./CMakeLists.txt
-    echo "add_subdirectory(./main)" >> $main_cmakelists_path
+    echo "add_subdirectory(./main/)" >> $main_cmakelists_path
     
     cd $PROJ_PROJECT_PATH
     ;;

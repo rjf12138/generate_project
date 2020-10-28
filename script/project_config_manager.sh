@@ -378,7 +378,7 @@ function config_project_config()
 								done
 
 								src_files_dirs_num=`expr ${#src_files_dirs[*]} / 2`
-								OPTION=$(whiptail --title "Menu Dialog" --menu "删除源文件目录" 15 60 $src_files_dirs_num "${src_files_dirs[@]}"3>&1 1>&2 2>&3)
+								OPTION=$(whiptail --title "Menu Dialog" --menu "查看源文件目录" 15 60 $src_files_dirs_num "${src_files_dirs[@]}" 3>&1 1>&2 2>&3)
 
 								exitstatus=$?
 								if [ $exitstatus != 0 ]; then

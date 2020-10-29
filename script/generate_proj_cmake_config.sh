@@ -109,7 +109,8 @@ do
         echo "add_library($lib_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
 
-        gen_lib_lists=$gen_lib_lists" "$lib_name
+        # 新添加的库放在前面不然会报错
+        gen_lib_lists=$lib_name" "$gen_lib_lists
         echo "add_subdirectory($src_dir)" >> $main_cmakelists_path
     fi
 done
@@ -126,15 +127,21 @@ if [ ! -z $is_empty_dir ];then
     echo "aux_source_directory(. DIR_LIB_SRCS)" >> ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
 
-    echo "add_library ($project_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
+    echo "add_library($project_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
     echo "" >> ./CMakeLists.txt
 
     for lib in $gen_lib_lists
     do
+        if [ "$lib" == "gmock" ] || [ "$lib" == "gmock_main" ] || [ "$lib" == "gtest" ] || [ "$lib" == "gtest_main" ]
+        then
+            continue
+        fi
+
         echo "target_link_libraries($project_name -l$lib)" >> ./CMakeLists.txt
     done
     echo "" >> ./CMakeLists.txt
-    gen_lib_lists=$project_name
+
+    gen_lib_lists=$project_name" "$gen_lib_lists
 
     echo "add_subdirectory(./src/)" >> $main_cmakelists_path
 fi
@@ -158,11 +165,14 @@ case $export_file_type in
 
     exe_name=`echo $program_entry_file | awk -F[.] '{print $1}'`
     echo "add_executable($exe_name $program_entry_file)" >> ./CMakeLists.txt
+    echo "" >> ./CMakeLists.txt
+
     for lib in $gen_lib_lists
     do
         echo "target_link_libraries($exe_name -l$lib)" >> ./CMakeLists.txt
     done
     echo "" >> ./CMakeLists.txt
+
     echo "add_subdirectory(./main/)" >> $main_cmakelists_path
     
     cd $PROJ_PROJECT_PATH

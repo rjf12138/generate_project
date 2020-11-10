@@ -99,7 +99,6 @@ then
 fi
 	
 cd $PROJ_PROJECT_PATH
-echo $2
 $JSON_PARSE $PROJECT_CONFIG_PATH << EOF
 set str $1 $2
 write

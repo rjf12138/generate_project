@@ -49,7 +49,12 @@ echo "            \"name\": \"gdb_debug\","                             >> launc
 echo "            \"type\": \"cppdbg\","                                >> launch.json
 echo "            \"request\": \"launch\","                             >> launch.json
 echo "            \"program\": \"$BIN_PATH/$EXE_FILE_NAME\","           >> launch.json
+if [ -z $PROJ_EXEC_ARGS ]
+then
+echo "            \"args\": [],"                                        >> launch.json
+else
 echo "            \"args\": [\"$PROJ_EXEC_ARGS\"],"                     >> launch.json
+fi
 echo "            \"stopAtEntry\": false,"                              >> launch.json
 echo "            \"cwd\": \"$PROJ_PROJECT_PATH\","                     >> launch.json
 echo "            \"environment\": [],"                                 >> launch.json

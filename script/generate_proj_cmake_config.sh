@@ -104,8 +104,7 @@ do
         echo "" >> ./CMakeLists.txt
 
         # 根据时间戳设置临时库名称
-        lib_name=`date +%s`
-        
+        lib_name=`echo $src_path | awk -F[/] '{print $NF}'`
         echo "add_library($lib_name \${DIR_LIB_SRCS})" >> ./CMakeLists.txt
         echo "" >> ./CMakeLists.txt
 
